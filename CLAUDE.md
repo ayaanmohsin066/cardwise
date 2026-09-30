@@ -55,6 +55,26 @@ does.
 - `docs/legacy-bugs.md` lists the regression tests each future phase has to add.
 - `docs/decisions.md` records settled design decisions. Follow them rather than reopening them.
 
+## Statement import (Phase 2)
+
+- **Flow:** `parseCsv` → `normalizeRows` (or `ingestCsv`) → `categorizeAll` → `summarizeStatement`, all in `src/engine`. It runs only in client components. The file is read with `File.text()` and never uploaded.
+- **`Transaction`** (`transaction-schema.ts`):
+  - `amount_cad` is positive for charges and negative for credits. A refund is a negative purchase: it keeps its merchant's category and reduces that category's spend, and later its points.
+  - Payments, fees and interest have no category. Fees and interest are kept for the benefits report.
+  - `statement_line` is the tie-break for posting order.
+- **Bank presets** (`src/engine/presets/`): a preset with `verified: false` must have `mapping: null` and `format: null`. Never guess a bank's column names. A preset becomes verified only from a real sample export.
+- **Categorization:**
+  - Rules come from `src/data/merchant_rules.json` and are matched case-insensitively on word boundaries (`containsPhrase`), after stripping accents and punctuation.
+  - The longest keyword wins. Use specific keywords ("united airlines", not "united"), and merchant names only.
+  - Unmatched lines go to "other" with low confidence.
+- **Overrides:** user corrections are keyed by `overrideKey()` (normalized description, with tokens containing digits dropped) and applied before rules.
+  - They're stored per card in localStorage (`src/app/lib/overrides-storage.ts`) and hold only merchant key → category.
+  - Nothing else from a statement is persisted.
+- **Refund floor is display-only.** `spend_by_category` is floored at $0 for the summary UI only. Points and value maths use raw signed amounts (`amount_cad`, `net_by_category`), which may be negative. See `docs/decisions.md`.
+- **Money:** round with `toCents()` / `roundCents()` (`money.ts`), never `Math.round(x * 100)`.
+- **Network:** `tests/rules/` fails if anything in `src/` calls `fetch`, `XMLHttpRequest`, `sendBeacon`, `WebSocket` or `EventSource`. `src/app/lib/catalog.ts` is `server-only`; it reads only card and issuer JSON.
+- **Dev mode:** FAKE fixture cards appear in the card picker only under `next dev`. Production builds show "No verified cards yet" until real cards exist.
+
 ## Commands
 
 - `npm run dev`: dev server

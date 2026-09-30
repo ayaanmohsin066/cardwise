@@ -1,15 +1,14 @@
 # Legacy bugs to guard against
 
 These are the four bugs found in `legacy/app.py` (see `docs/cardopt-audit.md`).
-None of the logic they affect exists in the new app yet. Each one becomes a
-Vitest regression test in the phase that builds that logic, so the rebuild
-can't repeat it.
+Each one becomes a Vitest regression test in the phase that builds that logic,
+so the rebuild can't repeat it.
 
 | # | bug | legacy location | regression test lands in |
 |---|---|---|---|
 | 1 | After-cap rate hard-coded to 1× | `solve()`: `Z[i,j]` objective coefficient is `-cpp/100` | **Phase 3** (benefits) |
-| 2 | Refunds ignored instead of netted | `build_spending_profile()`: `if amount<=0: continue` | **Phase 2** (ingest/categorize) |
-| 3 | Loose keyword matching | `classify_transaction()` and the `*_KEYWORDS` tuples | **Phase 2** (ingest/categorize) |
+| 2 | Refunds ignored instead of netted | `build_spending_profile()`: `if amount<=0: continue` | **Phase 2** (ingest/categorize): spend done ✅. Points half in **Phase 3** |
+| 3 | Loose keyword matching | `classify_transaction()` and the `*_KEYWORDS` tuples | **Phase 2** (ingest/categorize) ✅ |
 | 4 | Robustness score counts the base case | `robustness_analysis()`: `run("Base", ...)` goes into the score | **Phase 4** (optimizer analysis) |
 
 ## 1. After-cap rate hard-coded to 1× (Phase 3)
@@ -42,6 +41,17 @@ total never goes below $0. Card payments and transfers are excluded, not netted.
 **$0**. A +$100 purchase and a −$30 refund give **$70**. A credit-card payment
 row changes no category.
 
+**Status:** the spend tests are in `tests/engine/spend.test.ts` ("legacy bug 2")
+and use real fixture CSVs. Refunds keep their negative `amount_cad` and the
+merchant's category (`tests/engine/categorize.test.ts`).
+
+**Still to do in Phase 3:** refunds must also reduce earned points. The Phase 3
+calculator needs a regression test for this. With `fake-grocery-cash`, a $100
+grocery purchase and a −$30 refund must earn (100 − 30) × 5 = **350 pts**, not
+500. Add a second test where the refund exceeds the period's purchases: a $20
+purchase and a −$50 refund must give **−150 pts**, not 0 (see
+`docs/decisions.md`, "Refunds").
+
 ## 3. Loose keyword matching (Phase 2)
 
 **Legacy behaviour:** keywords are matched as substrings. `"united"` matches any
@@ -54,6 +64,12 @@ after normalizing case and punctuation.
 **Test:** a rule for "united" does not match "UNITED WAY DONATION" when the rule
 is scoped to airlines. A "bar" keyword does not match "BARBER SHOP". A "shell"
 rule matches "SHELL C12345" but not "SHELLFISH MARKET".
+
+**Status:** done, in `tests/engine/categorize.test.ts` ("legacy bug 3").
+- The seeded airline rule uses the keyword "united airlines". So UNITED FARMERS
+  CO-OP and UNITED WAY stay "other" with low confidence, while UNITED AIRLINES
+  is travel.
+- A rule that explicitly lists "united" does match UNITED FARMERS CO-OP.
 
 ## 4. Robustness score counts the base case (Phase 4)
 

@@ -9,7 +9,7 @@ choosing a different card, and how sensitive the answer is to your assumptions.
 
 All amounts are in Canadian dollars.
 
-> **Status:** redesign in progress. The app is currently a scaffold.
+> **Status:** redesign in progress. Statement import and categorization work; card recommendations come in later phases.
 
 ## Built on CardOpt by @srinihal007
 
@@ -20,9 +20,9 @@ with his permission. The original code is kept in [`legacy/`](legacy/), and
 
 ## Privacy
 
-- **Your statements never leave your browser.** CSV files are read and processed on your device. There is no server endpoint that receives transaction data.
+- **Your statements never leave your browser.** CSV files are read and processed on your device. There is no server endpoint that receives transaction data, and the app makes no network requests with it.
 - **No analytics or tracking** runs on your transactions, merchants or spending totals.
-- Nothing is uploaded, and closing the tab discards your data.
+- **Nothing from your statement is saved,** except the category corrections you make. Those are stored in your own browser's local storage as merchant name → category (no amounts or dates). You can clear them from the card's panel at any time. Everything else is gone when you close the tab.
 
 ## Card data
 

@@ -44,6 +44,19 @@ describe("project rules", () => {
     expect(offenders.map(rel)).toEqual([]);
   });
 
+  it("nothing in src makes network requests (statements never leave the browser)", () => {
+    const network = /\bfetch\s*\(|XMLHttpRequest|sendBeacon|new\s+WebSocket|new\s+EventSource/;
+    const offenders = sourceFiles("src").filter((p) => network.test(readFileSync(p, "utf8")));
+    expect(offenders.map(rel)).toEqual([]);
+  });
+
+  it("client components never import the server-only catalog loader", () => {
+    const client = sourceFiles("src/app").filter((p) => /^\s*["']use client["']/m.test(readFileSync(p, "utf8")));
+    const offenders = client.filter((p) => /lib\/catalog["']/.test(readFileSync(p, "utf8").replace(/import\s+type[^;]+;/g, "")));
+    expect(offenders.map(rel)).toEqual([]);
+    expect(readFileSync(join(ROOT, "src/app/lib/catalog.ts"), "utf8")).toMatch(/^import "server-only";/);
+  });
+
   it("there is no middleware/proxy that could see requests", () => {
     const candidates = ["middleware.ts", "proxy.ts", "src/middleware.ts", "src/proxy.ts"];
     const present = candidates.filter((f) => {

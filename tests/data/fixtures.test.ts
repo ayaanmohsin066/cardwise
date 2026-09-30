@@ -1,6 +1,16 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { validateCard, validateIssuers, validateProgram } from "@/engine";
+import {
+  categorizeAll,
+  summarizeStatement,
+  transactionId,
+  validateCard,
+  validateIssuers,
+  validateMerchantRules,
+  validateProgram,
+  validateTransaction,
+  type Transaction,
+} from "@/engine";
 import { DATA_DIR, FIXTURES_DIR, loadCardFiles, loadJson, loadProgramFiles } from "../helpers/data-files";
 
 const cards = loadCardFiles(join(FIXTURES_DIR, "cards"));
@@ -60,22 +70,36 @@ describe("test fixtures", () => {
 describe("transaction fixtures", () => {
   const seq = loadJson(join(FIXTURES_DIR, "transactions", "fake-shared-cap-2026-01.json")) as {
     card_id: string;
-    transactions: { statement_line: number; date: string; category: string; amount: number }[];
+    transactions: unknown[];
   };
-
-  it("fake-shared-cap-2026-01 matches the totals of worked example B", () => {
-    expect(cards.map((c) => c.file)).toContain(`${seq.card_id}.json`);
-    const total = (cat: string) =>
-      seq.transactions.filter((t) => t.category === cat).reduce((s, t) => s + t.amount, 0);
-    expect(total("groceries")).toBe(600);
-    expect(total("dining")).toBe(600);
+  const transactions: Transaction[] = seq.transactions.map((raw) => {
+    const r = validateTransaction(raw);
+    if (!r.ok) throw new Error(r.errors.join("\n"));
+    return r.transaction;
   });
 
-  it("is in posting order with statement lines 1..n and a same-date tie", () => {
-    const lines = seq.transactions.map((t) => t.statement_line);
-    expect(lines).toEqual(lines.map((_, i) => i + 1));
-    const dates = seq.transactions.map((t) => t.date);
+  it("fake-shared-cap-2026-01 is valid Transactions with stable ids", () => {
+    expect(cards.map((c) => c.file)).toContain(`${seq.card_id}.json`);
+    for (const t of transactions) {
+      expect(t.id).toBe(transactionId(t.statement_line, t.date, t.description, t.amount_cad));
+      expect([t.kind, t.is_foreign]).toEqual(["purchase", false]);
+    }
+  });
+
+  it("categorizes to the totals of worked example B ($600 groceries + $600 dining)", () => {
+    const rules = validateMerchantRules(loadJson(join(DATA_DIR, "merchant_rules.json")));
+    if (!rules.ok) throw new Error(rules.errors.join("\n"));
+    const s = summarizeStatement(categorizeAll(transactions, rules.rules));
+    expect(s.spend_by_category).toMatchObject({ groceries: 600, dining: 600 });
+    expect(s.purchases).toBe(1200);
+  });
+
+  it("is in posting order with statement lines 1..n and the line 3/4 same-date tie", () => {
+    const lines = transactions.map((t) => t.statement_line);
+    expect(lines).toEqual([1, 2, 3, 4, 5, 6]);
+    const dates = transactions.map((t) => t.date);
     expect([...dates].sort()).toEqual(dates);
-    expect(new Set(dates).size).toBeLessThan(dates.length);
+    expect(dates[2]).toBe(dates[3]);
+    expect(new Set(dates).size).toBe(5);
   });
 });

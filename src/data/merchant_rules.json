@@ -1,4 +1,252 @@
 {
   "version": 1,
-  "rules": []
+  "rules": [
+    {
+      "id": "grocery-chains",
+      "category": "groceries",
+      "keywords": [
+        "loblaws",
+        "no frills",
+        "real canadian superstore",
+        "zehrs",
+        "fortinos",
+        "provigo",
+        "maxi",
+        "your independent grocer",
+        "valu mart",
+        "sobeys",
+        "safeway",
+        "foodland",
+        "freshco",
+        "iga",
+        "thrifty foods",
+        "metro",
+        "food basics",
+        "super c",
+        "save on foods",
+        "t&t supermarket",
+        "farm boy",
+        "longo's",
+        "whole foods"
+      ]
+    },
+    {
+      "id": "restaurants-coffee",
+      "category": "dining",
+      "keywords": [
+        "tim hortons",
+        "starbucks",
+        "second cup",
+        "mcdonald's",
+        "wendy's",
+        "harvey's",
+        "a&w restaurant",
+        "burger king",
+        "kfc",
+        "popeyes",
+        "subway",
+        "pizza pizza",
+        "pizza hut",
+        "domino's",
+        "boston pizza",
+        "swiss chalet",
+        "the keg",
+        "chipotle",
+        "freshii",
+        "mary brown's",
+        "taco bell",
+        "montana's"
+      ]
+    },
+    {
+      "id": "food-delivery",
+      "category": "dining",
+      "keywords": [
+        "uber eats",
+        "skipthedishes",
+        "doordash"
+      ]
+    },
+    {
+      "id": "gas-stations",
+      "category": "gas",
+      "keywords": [
+        "petro-canada",
+        "esso",
+        "shell",
+        "ultramar",
+        "husky",
+        "chevron",
+        "mobil",
+        "pioneer",
+        "irving oil",
+        "fas gas"
+      ]
+    },
+    {
+      "id": "public-transit",
+      "category": "transit",
+      "keywords": [
+        "presto",
+        "ttc",
+        "go transit",
+        "stm",
+        "translink",
+        "oc transpo",
+        "calgary transit",
+        "edmonton transit",
+        "exo"
+      ]
+    },
+    {
+      "id": "rideshare",
+      "category": "transit",
+      "keywords": [
+        "uber",
+        "lyft"
+      ]
+    },
+    {
+      "id": "airlines",
+      "category": "travel",
+      "keywords": [
+        "air canada",
+        "westjet",
+        "porter airlines",
+        "flair airlines",
+        "air transat",
+        "united airlines",
+        "delta air",
+        "american airlines"
+      ]
+    },
+    {
+      "id": "travel-booking",
+      "category": "travel",
+      "keywords": [
+        "expedia",
+        "booking.com",
+        "airbnb",
+        "hotels.com",
+        "via rail"
+      ]
+    },
+    {
+      "id": "hotels",
+      "category": "travel",
+      "keywords": [
+        "marriott",
+        "hilton",
+        "hyatt",
+        "fairmont",
+        "best western",
+        "holiday inn"
+      ]
+    },
+    {
+      "id": "car-rental",
+      "category": "travel",
+      "keywords": [
+        "enterprise rent-a-car",
+        "avis",
+        "hertz",
+        "budget rent a car",
+        "national car rental"
+      ]
+    },
+    {
+      "id": "streaming",
+      "category": "streaming",
+      "keywords": [
+        "netflix",
+        "spotify",
+        "disney plus",
+        "disneyplus",
+        "youtube premium",
+        "prime video",
+        "paramount plus",
+        "paramountplus",
+        "apple tv"
+      ]
+    },
+    {
+      "id": "pharmacies",
+      "category": "drugstore",
+      "keywords": [
+        "shoppers drug mart",
+        "pharmaprix",
+        "rexall",
+        "london drugs",
+        "jean coutu",
+        "uniprix",
+        "familiprix"
+      ]
+    },
+    {
+      "id": "telecom",
+      "category": "recurring_bills",
+      "keywords": [
+        "rogers",
+        "bell canada",
+        "bell mobility",
+        "telus",
+        "fido",
+        "koodo",
+        "virgin plus",
+        "freedom mobile",
+        "videotron",
+        "public mobile",
+        "chatr"
+      ]
+    },
+    {
+      "id": "utilities",
+      "category": "recurring_bills",
+      "keywords": [
+        "hydro one",
+        "toronto hydro",
+        "bc hydro",
+        "hydro quebec",
+        "enbridge",
+        "fortisbc",
+        "epcor",
+        "atco"
+      ]
+    },
+    {
+      "id": "entertainment",
+      "category": "entertainment",
+      "keywords": [
+        "cineplex",
+        "landmark cinemas",
+        "ticketmaster",
+        "eventbrite"
+      ]
+    },
+    {
+      "id": "home-improvement",
+      "category": "home_improvement",
+      "keywords": [
+        "home depot",
+        "rona",
+        "lowe's",
+        "home hardware",
+        "reno depot",
+        "kent building supplies"
+      ]
+    },
+    {
+      "id": "online-marketplaces",
+      "category": "online_shopping",
+      "keywords": [
+        "amazon",
+        "amzn",
+        "ebay",
+        "etsy",
+        "shein",
+        "temu",
+        "aliexpress"
+      ]
+    }
+  ]
 }

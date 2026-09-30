@@ -60,8 +60,11 @@ If each rule had its **own** $1,000 cap instead, B would be 600 × 4 + 600 × 2 
 3,600 pts = $36.00.
 
 **C. Dated sequence (the expected Phase 3 result).**
-`transactions/fake-shared-cap-2026-01.json` has the same totals as B ($600
-groceries + $600 dining), spread across January 2026:
+`transactions/fake-shared-cap-2026-01.json` holds real `Transaction` records
+(see `src/engine/transaction-schema.ts`) in statement order. The LOBLAWS lines
+categorize as groceries and the TIM HORTONS lines as dining through
+`src/data/merchant_rules.json`, giving the same totals as B ($600 groceries +
+$600 dining), spread across January 2026:
 
 | line | date | category | amount | cap used before | at bonus rate | after cap | points | cap used after |
 |---|---|---|---|---|---|---|---|---|
@@ -80,3 +83,17 @@ first. If that tie-break were reversed (groceries before dining on 2026-01-12),
 the result would be 400 + 1,600 + 600 (150 × 4) + 550 (250 × 2 + 50 × 1) + 100
 + 50 = 3,300 pts = $33.00. A Phase 3 test should assert $32.00, which proves
 the tie-break uses statement order.
+
+## Statements (`statements/`)
+
+FAKE CSV exports for the ingest and categorize tests. The column layouts are
+invented for testing and are **not** real bank formats. Real bank presets wait
+for real sample exports. `tests/helpers/statements.ts` has the mapping for each
+file.
+
+| file | layout | covers |
+|---|---|---|
+| `amount-currency.csv` | one signed amount column (purchases positive), currency column, YYYY-MM-DD | purchases, partial and full refunds, payment, annual fee, interest, a USD purchase (high-confidence FX), `UNITED FARMERS CO-OP` vs `UNITED AIRLINES`, `SHELL` vs `SHELLFISH`, `UBER EATS` vs `UBER`, a quoted comma |
+| `debit-credit.csv` | debit and credit columns, MM/DD/YYYY, no FX column | refund as a credit, payment, cash-back redemption (not a refund), foreign transaction fee, a EUR purchase (low-confidence FX from the description), a bad date row and a bad amount row |
+| `fr-headerless.csv` | no header, `;` delimiter, DD/MM/YYYY, decimal comma, purchases negative | French and accented text (`ÉPICERIE`, `INTÉRÊTS`, `FRAIS ANNUELS`, `PAIEMENT MERCI`), a refund written as a positive number, space-separated thousands |
+

@@ -1,12 +1,102 @@
 {
   "card_id": "fake-shared-cap",
-  "note": "FAKE purchases for one month on fake-shared-cap, in statement order. Worked result in tests/fixtures/README.md.",
+  "note": "FAKE purchases for one month on fake-shared-cap, as Transactions in statement order. LOBLAWS lines categorize as groceries and TIM HORTONS lines as dining. Worked result in tests/fixtures/README.md.",
   "transactions": [
-    { "statement_line": 1, "date": "2026-01-03", "category": "dining", "amount": 200 },
-    { "statement_line": 2, "date": "2026-01-05", "category": "groceries", "amount": 400 },
-    { "statement_line": 3, "date": "2026-01-12", "category": "dining", "amount": 300 },
-    { "statement_line": 4, "date": "2026-01-12", "category": "groceries", "amount": 150 },
-    { "statement_line": 5, "date": "2026-01-20", "category": "dining", "amount": 100 },
-    { "statement_line": 6, "date": "2026-01-25", "category": "groceries", "amount": 50 }
+    {
+      "id": "tx-1-400c17f5",
+      "statement_line": 1,
+      "date": "2026-01-03",
+      "description": "TIM HORTONS #0456 TORONTO ON",
+      "amount_cad": 200,
+      "kind": "purchase",
+      "is_foreign": false,
+      "is_foreign_confidence": "high",
+      "raw": {
+        "Date": "2026-01-03",
+        "Description": "TIM HORTONS #0456 TORONTO ON",
+        "Amount": "200.00",
+        "Currency": "CAD"
+      }
+    },
+    {
+      "id": "tx-2-ccd778fe",
+      "statement_line": 2,
+      "date": "2026-01-05",
+      "description": "LOBLAWS #1234 TORONTO ON",
+      "amount_cad": 400,
+      "kind": "purchase",
+      "is_foreign": false,
+      "is_foreign_confidence": "high",
+      "raw": {
+        "Date": "2026-01-05",
+        "Description": "LOBLAWS #1234 TORONTO ON",
+        "Amount": "400.00",
+        "Currency": "CAD"
+      }
+    },
+    {
+      "id": "tx-3-17d0a3c2",
+      "statement_line": 3,
+      "date": "2026-01-12",
+      "description": "TIM HORTONS #0456 TORONTO ON",
+      "amount_cad": 300,
+      "kind": "purchase",
+      "is_foreign": false,
+      "is_foreign_confidence": "high",
+      "raw": {
+        "Date": "2026-01-12",
+        "Description": "TIM HORTONS #0456 TORONTO ON",
+        "Amount": "300.00",
+        "Currency": "CAD"
+      }
+    },
+    {
+      "id": "tx-4-752c4756",
+      "statement_line": 4,
+      "date": "2026-01-12",
+      "description": "LOBLAWS #1234 TORONTO ON",
+      "amount_cad": 150,
+      "kind": "purchase",
+      "is_foreign": false,
+      "is_foreign_confidence": "high",
+      "raw": {
+        "Date": "2026-01-12",
+        "Description": "LOBLAWS #1234 TORONTO ON",
+        "Amount": "150.00",
+        "Currency": "CAD"
+      }
+    },
+    {
+      "id": "tx-5-7c77d20d",
+      "statement_line": 5,
+      "date": "2026-01-20",
+      "description": "TIM HORTONS #0456 TORONTO ON",
+      "amount_cad": 100,
+      "kind": "purchase",
+      "is_foreign": false,
+      "is_foreign_confidence": "high",
+      "raw": {
+        "Date": "2026-01-20",
+        "Description": "TIM HORTONS #0456 TORONTO ON",
+        "Amount": "100.00",
+        "Currency": "CAD"
+      }
+    },
+    {
+      "id": "tx-6-7529a06d",
+      "statement_line": 6,
+      "date": "2026-01-25",
+      "description": "LOBLAWS #1234 TORONTO ON",
+      "amount_cad": 50,
+      "kind": "purchase",
+      "is_foreign": false,
+      "is_foreign_confidence": "high",
+      "raw": {
+        "Date": "2026-01-25",
+        "Description": "LOBLAWS #1234 TORONTO ON",
+        "Amount": "50.00",
+        "Currency": "CAD"
+      }
+    }
   ]
 }

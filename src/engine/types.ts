@@ -27,3 +27,5 @@ export type {
 } from "./card-schema";
 export type { Program, Redemption } from "./program-schema";
 export type { Issuer, IssuerTier } from "./issuer-schema";
+export type { Transaction, TransactionKind, Confidence } from "./transaction-schema";
+export type { MerchantRule, MerchantRules } from "./merchant-rules-schema";

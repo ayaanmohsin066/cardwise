@@ -1,7 +1,7 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { validateCard, validateIssuers, validateProgram } from "@/engine";
+import { validateCard, validateIssuers, validateMerchantRules, validateProgram } from "@/engine";
 import { DATA_DIR, loadCardFiles, loadJson, loadProgramFiles } from "../helpers/data-files";
 
 const CARDS_DIR = join(DATA_DIR, "cards");
@@ -19,6 +19,12 @@ function mustValidate<R extends { ok: true } | { ok: false; errors: string[] }>(
 describe("src/data/issuers.json", () => {
   it("is valid", () => {
     mustValidate(validateIssuers(loadJson(join(DATA_DIR, "issuers.json"))));
+  });
+});
+
+describe("src/data/merchant_rules.json", () => {
+  it("is valid", () => {
+    mustValidate(validateMerchantRules(loadJson(join(DATA_DIR, "merchant_rules.json"))));
   });
 });
 
