@@ -1,0 +1,18 @@
+{
+  "id": "fake-points-program",
+  "name": "FAKE Points Program",
+  "redemptions": [
+    {
+      "method": "statement_credit",
+      "cents_per_point": 1.0,
+      "is_estimate": false,
+      "notes": null
+    },
+    {
+      "method": "travel_transfer",
+      "cents_per_point": 2.0,
+      "is_estimate": true,
+      "notes": "FAKE: illustrative estimate for tests."
+    }
+  ]
+}

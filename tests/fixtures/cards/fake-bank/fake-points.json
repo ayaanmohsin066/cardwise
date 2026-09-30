@@ -1,0 +1,40 @@
+{
+  "id": "fake-points",
+  "name": "FAKE Points Card",
+  "issuer": "fake-bank",
+  "country": "CA",
+  "currency": "CAD",
+  "network": "amex",
+  "card_type": "points",
+  "program_id": "fake-points-program",
+  "annual_fee": 120,
+  "first_year_fee": 0,
+  "fx_fee_pct": 0,
+  "base_rate": 1,
+  "earn_rules": [
+    { "categories": ["travel"], "rate": 3, "cap": "none", "after_cap_rate": null },
+    { "categories": ["gas", "transit"], "rate": 2, "cap": null, "after_cap_rate": null }
+  ],
+  "welcome_bonus": [
+    { "points_or_cash": 10000, "min_spend": 1000, "window_months": 3 }
+  ],
+  "purchase_credits": [
+    {
+      "description": "FAKE: $100 annual travel credit",
+      "merchant_keywords": ["fake air", "fake hotels"],
+      "amount": 100,
+      "period": "year"
+    }
+  ],
+  "perks": [
+    {
+      "type": "lounge",
+      "summary": "FAKE: 2 lounge visits per year.",
+      "conditions": null,
+      "requires_enrollment": true,
+      "source_url": "https://example.com/fake-bank/fake-points/lounge"
+    }
+  ],
+  "source_url": "https://example.com/fake-bank/fake-points",
+  "last_verified": "2026-01-01"
+}

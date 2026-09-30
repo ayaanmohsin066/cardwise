@@ -1,0 +1,37 @@
+{
+  "id": "fake-grocery-cash",
+  "name": "FAKE Grocery Cash Card",
+  "issuer": "fake-bank",
+  "country": "CA",
+  "currency": "CAD",
+  "network": "mastercard",
+  "card_type": "cashback",
+  "program_id": null,
+  "annual_fee": 100,
+  "first_year_fee": 100,
+  "fx_fee_pct": 2.5,
+  "base_rate": 1,
+  "earn_rules": [
+    {
+      "categories": ["groceries", "dining"],
+      "rate": 5,
+      "cap": { "amount": 500, "period": "month" },
+      "after_cap_rate": 1
+    }
+  ],
+  "welcome_bonus": [
+    { "points_or_cash": 100, "min_spend": 1000, "window_months": 3 }
+  ],
+  "purchase_credits": [],
+  "perks": [
+    {
+      "type": "extended_warranty",
+      "summary": "FAKE: doubles manufacturer warranty up to 1 extra year.",
+      "conditions": "FAKE: item must be bought in full with the card.",
+      "requires_enrollment": false,
+      "source_url": "https://example.com/fake-bank/fake-grocery-cash/warranty"
+    }
+  ],
+  "source_url": "https://example.com/fake-bank/fake-grocery-cash",
+  "last_verified": "2026-01-01"
+}

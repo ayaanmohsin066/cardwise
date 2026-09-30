@@ -1,0 +1,114 @@
+{
+  "issuers": [
+    {
+      "id": "rbc",
+      "name": "RBC",
+      "tier": 1
+    },
+    {
+      "id": "td",
+      "name": "TD",
+      "tier": 1
+    },
+    {
+      "id": "scotiabank",
+      "name": "Scotiabank",
+      "tier": 1
+    },
+    {
+      "id": "bmo",
+      "name": "BMO",
+      "tier": 1
+    },
+    {
+      "id": "cibc",
+      "name": "CIBC",
+      "tier": 1
+    },
+    {
+      "id": "national-bank",
+      "name": "National Bank",
+      "tier": 1
+    },
+    {
+      "id": "amex-canada",
+      "name": "American Express Canada",
+      "tier": 1
+    },
+    {
+      "id": "desjardins",
+      "name": "Desjardins",
+      "tier": 1
+    },
+    {
+      "id": "capital-one-canada",
+      "name": "Capital One Canada",
+      "tier": 2
+    },
+    {
+      "id": "mbna",
+      "name": "MBNA",
+      "tier": 2
+    },
+    {
+      "id": "pc-financial",
+      "name": "PC Financial",
+      "tier": 2
+    },
+    {
+      "id": "canadian-tire",
+      "name": "Canadian Tire (Triangle)",
+      "tier": 2
+    },
+    {
+      "id": "rogers-bank",
+      "name": "Rogers Bank",
+      "tier": 2
+    },
+    {
+      "id": "tangerine",
+      "name": "Tangerine",
+      "tier": 2
+    },
+    {
+      "id": "simplii",
+      "name": "Simplii Financial",
+      "tier": 2
+    },
+    {
+      "id": "walmart-rewards",
+      "name": "Walmart Rewards (Fairstone)",
+      "tier": 2
+    },
+    {
+      "id": "neo-financial",
+      "name": "Neo Financial",
+      "tier": 3
+    },
+    {
+      "id": "brim-financial",
+      "name": "Brim Financial",
+      "tier": 3
+    },
+    {
+      "id": "laurentian-bank",
+      "name": "Laurentian Bank",
+      "tier": 3
+    },
+    {
+      "id": "atb-financial",
+      "name": "ATB Financial",
+      "tier": 3
+    },
+    {
+      "id": "vancity",
+      "name": "Vancity",
+      "tier": 3
+    },
+    {
+      "id": "meridian",
+      "name": "Meridian",
+      "tier": 3
+    }
+  ]
+}
