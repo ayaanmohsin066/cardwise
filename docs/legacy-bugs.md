@@ -9,7 +9,7 @@ so the rebuild can't repeat it.
 | 1 | After-cap rate hard-coded to 1× | `solve()`: `Z[i,j]` objective coefficient is `-cpp/100` | **Phase 3** (benefits) ✅ |
 | 2 | Refunds ignored instead of netted | `build_spending_profile()`: `if amount<=0: continue` | **Phase 2** (ingest/categorize) ✅ spend; **Phase 3** ✅ points |
 | 3 | Loose keyword matching | `classify_transaction()` and the `*_KEYWORDS` tuples | **Phase 2** (ingest/categorize) ✅ |
-| 4 | Robustness score counts the base case | `robustness_analysis()`: `run("Base", ...)` goes into the score | **Phase 4** (optimizer analysis) |
+| 4 | Robustness score counts the base case | `robustness_analysis()`: `run("Base", ...)` goes into the score | **Phase 4** (optimizer analysis) ✅ |
 
 ## 1. After-cap rate hard-coded to 1× (Phase 3)
 
@@ -82,6 +82,11 @@ It always matches itself, so the score can never go below about 5%.
 
 **Required:** the score is the share of *perturbed* scenarios whose wallet
 matches the base wallet. The base case is not counted.
+
+**Status:** done, in `tests/engine/recommend.test.ts` ("legacy bug 4").
+`rankingStability` counts perturbed scenarios only. When every scenario
+changes the ranking, the result is `{ scenarios: 2, held: 0, share: 0 }`.
+`sensitivity()` never passes the base case in as a scenario.
 
 **Test:** with a spend profile where every perturbed scenario changes the
 wallet, the score is **0%**, not 1/21.

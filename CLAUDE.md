@@ -73,7 +73,11 @@ does.
   - Nothing else from a statement is persisted.
 - **Refund floor is display-only.** `spend_by_category` is floored at $0 for the summary UI only. Points and value maths use raw signed amounts (`amount_cad`, `net_by_category`), which may be negative. See `docs/decisions.md`.
 - **Money:** round with `toCents()` / `roundCents()` (`money.ts`), never `Math.round(x * 100)`.
-- **Network:** `tests/rules/` fails if anything in `src/` calls `fetch`, `XMLHttpRequest`, `sendBeacon`, `WebSocket` or `EventSource`. `src/app/lib/catalog.ts` is `server-only`; it reads only card and issuer JSON.
+- **Network:** `tests/rules/` fails if anything in `src/` references `fetch`, `XMLHttpRequest`, `sendBeacon`, `WebSocket` or `EventSource`, with **one exception**.
+  - `src/app/lib/solver-asset.ts` may fetch exactly `/solver/highs.wasm` from our own origin, through `solverWasmUrl()`, which refuses any other URL.
+  - `next.config.ts` sends `Content-Security-Policy: connect-src 'self'`.
+  - Don't add other exceptions.
+  - `src/app/lib/catalog.ts` is `server-only`; it reads only card and issuer JSON.
 - **Dev mode:** FAKE fixture cards appear in the card picker only under `next dev`. Production builds show "No verified cards yet" until real cards exist.
 
 ## Benefits and statement check (Phase 3)
@@ -93,6 +97,21 @@ does.
   - the validated colours `--series-1..3`, with each card keeping a fixed colour slot;
   - a legend, direct labels, a tooltip and a "Show as table" alternative.
 - The rules in `docs/decisions.md` ("Benefits engine rules") are the spec.
+
+## Earn more (Phase 4)
+
+- **The engine never loads the solver.** `solveRouting(cardSet, cells, mode, solver)` takes an injected `LpSolver`.
+  - The browser builds one with `src/app/lib/solver.ts`, from our own origin, handing HiGHS the compiled module through `instantiateWasm`.
+  - Tests use `tests/helpers/solver.ts`.
+  - `scripts/copy-solver-wasm.mjs` (run by `predev` and `prebuild`) copies the binary to `public/solver/`, which is gitignored.
+- **The LP decides routing only.** Its objective (`upper_bound`) is never displayed. Values shown come from `routeTransactions` + `scoreAssignment` (replaying real transactions through `computeBenefits`).
+- **Annual figures are projections.** They're labelled as such, with a warning under 3 months. Welcome bonuses are never annualized, and credits never exceed their yearly limit.
+- **Sensitivity counts perturbed scenarios only** (`rankingStability`). The base case is never a scenario.
+- **Credits:** the routing policy captures purchase credits first (`CreditRule`).
+- **Gain breakdown:** routing gain + card-change gain = total gain versus actual use.
+- **Web Worker:** "Earn more" runs in the worker (`src/app/workers/recommend.worker.ts` → `runRecommendations`). Keep heavy work off the main thread, and keep the worker's imports to the pure computation and the guarded solver loader (tested).
+- **Synthetic cards:** `tests/helpers/synthetic.ts` generates FAKE catalogue cards for scale tests. Never use them outside tests.
+- The rules in `docs/decisions.md` ("Earn more") are the spec.
 
 ## Commands
 

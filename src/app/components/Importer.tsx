@@ -18,6 +18,7 @@ import { BenefitsPanel, type BenefitsSettings } from "./BenefitsPanel";
 import { CardPicker, MAX_CARDS } from "./CardPicker";
 import { CardStatement } from "./CardStatement";
 import { CombinedSummary } from "./CombinedSummary";
+import { EarnMore } from "./EarnMore";
 
 /** Per-card state. Held only in memory; overrides are also saved to localStorage. */
 interface CardState {
@@ -35,6 +36,8 @@ export interface CardReport {
   slot: number;
   items: CategorizedTransaction[];
   report: BenefitsReport;
+  /** Refund id -> statement line of the matched purchase, or null if unmatched. */
+  refundMatches: ReadonlyMap<string, number | null>;
 }
 
 export function Importer({ catalog }: { catalog: Catalog }) {
@@ -92,7 +95,13 @@ export function Importer({ catalog }: { catalog: Catalog }) {
         redemption_method: st.settings.redemption_method,
         open_date: st.settings.open_date || null,
       });
-      out[id] = { option, program, slot: st.slot, items, report };
+      const lineOf = new Map(items.map((i) => [i.transaction.id, i.transaction.statement_line]));
+      const refundMatches = new Map(
+        report.transactions
+          .filter((t) => t.refund_confidence !== null)
+          .map((t) => [t.transaction.id, t.matched_purchase_id ? lineOf.get(t.matched_purchase_id) ?? null : null] as const),
+      );
+      out[id] = { option, program, slot: st.slot, items, report, refundMatches };
     }
     return out;
   }, [cards, cardsById, catalog.programs]);
@@ -118,6 +127,7 @@ export function Importer({ catalog }: { catalog: Catalog }) {
               overrides={st.overrides}
               onOverrides={(o) => setOverrides(id, o)}
               saveFailed={st.saveFailed}
+              refundMatches={r?.refundMatches}
             />
             {r && (
               <BenefitsPanel
@@ -133,6 +143,7 @@ export function Importer({ catalog }: { catalog: Catalog }) {
         );
       })}
       {combined.length > 1 && <CombinedSummary reports={combined} />}
+      {(catalog.empty || combined.length > 0) && <EarnMore catalog={catalog} reports={combined} version={reports} />}
       <p className="text-xs text-muted">
         Privacy: statements are processed only in this browser. Category corrections you make are
         saved in this browser&apos;s local storage (merchant name and category only) and are never

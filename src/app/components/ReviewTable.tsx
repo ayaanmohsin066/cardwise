@@ -8,6 +8,8 @@ interface Props {
   items: CategorizedTransaction[];
   onCategory: (description: string, category: Category) => void;
   onReset: (description: string) => void;
+  /** Refund id -> statement line of the purchase it matched, or null if unmatched. */
+  refundMatches?: ReadonlyMap<string, number | null>;
 }
 
 const SOURCE_LABELS = {
@@ -17,7 +19,7 @@ const SOURCE_LABELS = {
   excluded: "Not spending",
 } as const;
 
-export function ReviewTable({ items, onCategory, onReset }: Props) {
+export function ReviewTable({ items, onCategory, onReset, refundMatches }: Props) {
   const [onlyReview, setOnlyReview] = useState(false);
   const toReview = items.filter((i) => i.confidence === "low").length;
   const shown = onlyReview ? items.filter((i) => i.confidence === "low") : items;
@@ -74,7 +76,16 @@ export function ReviewTable({ items, onCategory, onReset }: Props) {
                     )}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums">{formatCad(t.amount_cad)}</td>
-                  <td className="px-3 py-2">{KIND_LABELS[t.kind]}</td>
+                  <td className="px-3 py-2">
+                    <div>{KIND_LABELS[t.kind]}</div>
+                    {t.kind === "refund" && refundMatches?.has(t.id) && (
+                      <div className="text-xs text-muted">
+                        {refundMatches.get(t.id) === null
+                          ? "Not matched to a purchase (points estimated)"
+                          : `Matches line ${refundMatches.get(t.id)}`}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-3 py-2">
                     {item.category === null ? (
                       <span className="text-muted">Not spending</span>

@@ -22,6 +22,10 @@ export const STATEMENTS = {
     mapping: { ...none, date: "Date", description: "Description", amount: "Amount", currency: "Currency" },
     format: { has_header: true, date_format: "YYYY-MM-DD", decimal_separator: ".", purchase_sign: "positive" },
   },
+  "phase3-walkthrough.csv": {
+    mapping: { ...none, date: "Date", description: "Description", amount: "Amount", currency: "Currency" },
+    format: { has_header: true, date_format: "YYYY-MM-DD", decimal_separator: ".", purchase_sign: "positive" },
+  },
   "debit-credit.csv": {
     mapping: { ...none, date: "Transaction Date", description: "Details", debit: "Debit", credit: "Credit" },
     format: { has_header: true, date_format: "MM/DD/YYYY", decimal_separator: ".", purchase_sign: "positive" },

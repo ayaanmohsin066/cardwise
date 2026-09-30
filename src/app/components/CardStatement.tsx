@@ -44,10 +44,11 @@ interface Props {
   overrides: Overrides;
   onOverrides: (o: Overrides) => void;
   saveFailed: boolean;
+  refundMatches?: ReadonlyMap<string, number | null>;
 }
 
 export function CardStatement({
-  card, issuerName, hasTransactions, onTransactions, categorized, overrides, onOverrides, saveFailed,
+  card, issuerName, hasTransactions, onTransactions, categorized, overrides, onOverrides, saveFailed, refundMatches,
 }: Props) {
   const preset = presetForIssuer(card.issuer);
   const usable = isUsablePreset(preset);
@@ -188,7 +189,7 @@ export function CardStatement({
             </p>
           )}
           <StatementSummary summary={summary} />
-          <ReviewTable items={categorized} onCategory={onCategory} onReset={onResetCategory} />
+          <ReviewTable items={categorized} onCategory={onCategory} onReset={onResetCategory} refundMatches={refundMatches} />
         </div>
       )}
     </section>

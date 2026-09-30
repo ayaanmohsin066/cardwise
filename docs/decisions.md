@@ -128,3 +128,115 @@ All reviewed. They are implemented in `src/engine/points.ts`, `benefits.ts`,
     only. **The UI labels it an estimate.** *(Accepted.)*
 11. **Combined totals** add dollars across cards. Points from different programs
     are never summed.
+
+## Earn more: routing and recommendations (Phase 4, reviewed 2026-09-30)
+
+All reviewed. Implemented in `src/engine/lp.ts`, `optimize.ts`, `policy.ts`,
+`recommend.ts` and `bruteforce.ts`, with tests. Rules 1, 3, 5, 6, 7 and 8 were
+accepted as written; 2 and 4 were accepted with the changes noted.
+
+1. **Solver.** HiGHS (npm `highs`, WebAssembly) behind an `LpSolver`
+   interface. The engine never loads it.
+   - The browser loads the binary once from `/solver/highs.wasm` on our own
+     origin (`src/app/lib/solver-asset.ts`, the only network exception). It
+     compiles the binary and hands it over through `instantiateWasm`, so HiGHS
+     doesn't fetch anything itself.
+   - `Content-Security-Policy: connect-src 'self'` blocks every other origin.
+2. **LP model.**
+   - Demand is net spend per category × calendar month × domestic/foreign
+     (raw signed; a net-negative cell has no demand to route).
+   - Each card offers its bonus tier, its after-cap tier or an uncapped rate.
+     Bonus tiers sharing a cap are limited per cap period.
+   - The objective is the value through `valuePerDollar()`, minus the FX cost
+     `f/(1+f)` per foreign dollar, minus prorated fees.
+   - It decides routing only. Its objective is never shown.
+3. **FX in routing.** Foreign spend is its own demand, so the fee changes the
+   answer. It is estimated on the statement amount; the small difference from
+   a different card's conversion is ignored.
+4. **Purchase credits are not in the LP**, because they're merchant-level, not
+   category-level. *(Accepted with a fix.)*
+   - The routing policy captures them first. Purchases matching a card's
+     `merchant_keywords` go to that card until the credit's limit for its
+     period is used (`CreditRule`), then normal routing.
+   - The policy sentence names the merchant and the credit.
+   - Tested: a card whose category the LP routes elsewhere still captures its
+     credit.
+   - Credits are annualized only up to their yearly limit (`annualCredits`).
+   - "Use your cards better" shows captured credits as their own line, so the
+     category table adds up to the total.
+5. **First year.**
+   - Only cards the user would newly open (`is_new`) use `first_year_fee` and
+     welcome bonuses. Owned cards use `annual_fee`.
+   - Each new card pursues all its bonus entries or none. Every combination is
+     solved (at most 8) and replayed, and the best replayed value wins.
+   - The bonus window starts at the start of the data. If the data is shorter
+     than the window, the requirement becomes a pace
+     (`min_spend × months / window`), labelled projected.
+   - A bonus counts once and is never annualized.
+   - *(Accepted.)* **Not modelled yet: welcome bonuses paid in monthly
+     instalments** (e.g. X points each month you spend Y). They need a future
+     schema field (e.g. an instalment list on `welcome_bonus`). Until then such
+     a bonus can't be represented, and it must not be approximated with the
+     current fields.
+6. **Policy from the LP.** For each category, the options the LP actually used
+   are ordered by value: "Card A until its cap is reached, then Card B".
+   - If every used option is capped, the best uncapped option is added as the
+     fallback.
+   - Foreign steps appear only where the category has foreign spend that
+     routes differently.
+   - Categories with no spend get the best available order, marked as such.
+7. **Replay** (the shown value).
+   - Real transactions are routed in posting order. A purchase that crosses a
+     cap stays on that card, as it would in reality.
+   - Refunds follow their purchase (same merchant, most recent with enough
+     left). A pursued bonus card takes purchases inside its window until its
+     requirement is met.
+   - Each card's share is scored with `computeBenefits`.
+   - Fees, interest and payment lines are left out of every replay, current
+     and suggested alike. Statement-credit lines stay with their card.
+8. **Annualizing.** Period value × 12 / months, with the full annual fee
+   subtracted (not a cent-rounded prorated fee × 12), and credits capped at
+   their yearly limit. It's labelled a projection, with a warning under 3
+   months.
+9. **Baselines.** "Use your cards better" compares against what the user
+   actually did. "Change a card" gains compare against **the user's current
+   cards used as suggested**, so routing gains aren't credited to a new card.
+   *(Accepted with an addition.)* The UI also shows routing gain + card-change
+   gain = total gain versus actual use (`routing_gain_annual`,
+   `total_gain_annual`). Both come from the same spend pool, so they add up
+   exactly (tested).
+10. **Unverified terms.** A card missing any term needed for this spend and
+    mode is excluded, with every reason listed. The rest are still routed. An
+    excluded owned card's spend is left out of "Use your cards better".
+11. **Sensitivity.** Each points program in the top 3 changes is valued at its
+    lowest and highest verified value (across its redemption methods). That
+    gives 2 scenarios per program with a range, and the base case is never
+    counted (`rankingStability`; legacy bug 4). A program with one value adds
+    no scenario.
+12. **Brute force.** `bruteForceBest` enumerates grid splits (bonus tier
+    first) for small cases. A property test on 40 seeded random cases checks
+    the LP is never beaten.
+
+### Phase 4.1: worker and scale
+
+13. **Web Worker.** "Earn more" runs in `src/app/workers/recommend.worker.ts`,
+    calling the pure `runRecommendations()` (`src/app/lib/run-recommendations.ts`).
+    - The worker loads the solver through the same single-URL guard
+      (`solver.ts` → `solver-asset.ts`).
+    - Its script response carries `connect-src 'self'`, so the policy applies
+      inside the worker too.
+    - Progress is posted per stage. A new request, or Cancel, terminates the old
+      worker; that's the only way to stop a synchronous solve.
+    - Privacy tests cover the worker: it's scanned by the network rule, there is
+      exactly one same-origin module worker, no other channels exist, and its
+      imports are limited.
+    - In the browser, a full run showed no main-thread task over 50 ms.
+14. **Scale.** "Change a card" with 100 synthetic cards and 3 owned cards (300
+    candidate sets, ongoing and first year) takes about 0.6 s with 120
+    transactions and 0.8 s with 300, in Node (`tests/engine/benchmark.test.ts`).
+    - That's well under the ~5 s threshold, so **pruning is off by default**.
+    - `pruneCatalogue` exists for a larger catalogue. It keeps any card that
+      beats the current best rate in a category with spend, has a welcome bonus
+      or credit, or has a lower annual fee than the priciest current card.
+    - Tested on three synthetic seeds: pruning never drops the best ongoing or
+      first-year result.

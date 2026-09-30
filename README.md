@@ -9,7 +9,7 @@ choosing a different card, and how sensitive the answer is to your assumptions.
 
 All amounts are in Canadian dollars.
 
-> **Status:** redesign in progress. Statement import, categorization, the benefits report and the statement check work. Card recommendations come in a later phase.
+> **Status:** redesign in progress. Statement import, categorization, the benefits report, the statement check and "Earn more" recommendations work. The card catalogue is waiting for verified card terms.
 
 ## Built on CardOpt by @srinihal007
 
@@ -22,6 +22,7 @@ with his permission. The original code is kept in [`legacy/`](legacy/), and
 
 - **Your statements never leave your browser.** CSV files are read and processed on your device. There is no server endpoint that receives transaction data, and the app makes no network requests with it.
 - **No analytics or tracking** runs on your transactions, merchants or spending totals.
+- **The only thing the page downloads for recommendations is the optimizer itself.** The open-source HiGHS solver is fetched once from this site. The optimization then runs in your browser, and nothing about your spending is sent anywhere. The site's security policy blocks connections to any other server.
 - **Nothing from your statement is saved,** except the category corrections you make and, per card, which rounding method matched your statement. Both are stored in your own browser's local storage: merchant name → category, and one word for rounding. No amounts or dates are stored. You can clear corrections from the card's panel at any time. Everything else is gone when you close the tab.
 
 ## Card data
