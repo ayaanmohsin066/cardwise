@@ -17,9 +17,13 @@ import {
  * Conventions (see CLAUDE.md):
  * - Every key is required. An unverified value is an explicit `null`.
  * - Lists are `null` when unverified and `[]` when verified to have none.
- * - A cap is `null` (unverified), `"none"` (verified uncapped) or an object.
- * - Rates are percent for `card_type: "cashback"` and points per CAD 1 for
- *   `card_type: "points"`.
+ * - Caps are defined once in `caps` and referenced by `earn_rules[].cap_id`,
+ *   so several rules can share one cap. `cap_id` is `null` (unverified),
+ *   `"none"` (verified uncapped) or the id of an entry in `caps`.
+ * - Every rate, and every welcome-bonus amount, is in points of the card's
+ *   program. Cashback cards use the "cash-cad" program (1 point = 1 cent), so
+ *   2% back is rate 2. Only `valuePerDollar()` converts points to dollars.
+ * - `card_type` is for display only and never changes how a rate is read.
  */
 
 export const NETWORKS = ["visa", "mastercard", "amex"] as const;
@@ -37,7 +41,17 @@ export const PERK_TYPES = [
 
 const category = z.enum(CATEGORIES, { error: "is not a known category" });
 
+/** The built-in program for cashback cards: 1 point = 1 cent. */
+export const CASH_PROGRAM_ID = "cash-cad";
+
+/** A cap_id value meaning "verified to have no cap". */
+export const NO_CAP = "none";
+
 export const capSchema = z.strictObject({
+  id: z
+    .string()
+    .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, { error: "must be a lowercase slug" })
+    .refine((id) => id !== NO_CAP, { error: `must not be "${NO_CAP}"` }),
   amount: term(nonNegative),
   period: term(period),
 });
@@ -48,12 +62,13 @@ export const earnRuleSchema = z.strictObject({
     .min(1, { error: "must list at least one category" })
     .refine((cs) => new Set(cs).size === cs.length, { error: "must not repeat a category" }),
   rate: term(nonNegative),
-  cap: term(z.union([z.literal("none"), capSchema])),
+  /** null = unverified, "none" = verified uncapped, otherwise an id in `caps`. */
+  cap_id: term(nonEmptyString),
   after_cap_rate: term(nonNegative),
 });
 
 export const welcomeBonusSchema = z.strictObject({
-  /** Points for points cards, CAD for cashback cards. */
+  /** In program points, like rates. For "cash-cad", $100 is 10000. */
   points_or_cash: term(nonNegative),
   min_spend: term(nonNegative),
   window_months: term(z.number().int().positive()),
@@ -89,6 +104,7 @@ export const cardSchema = z
     first_year_fee: term(nonNegative),
     fx_fee_pct: term(nonNegative),
     base_rate: term(nonNegative),
+    caps: term(z.array(capSchema)),
     earn_rules: term(z.array(earnRuleSchema)),
     welcome_bonus: term(z.array(welcomeBonusSchema)),
     purchase_credits: term(z.array(purchaseCreditSchema)),
@@ -114,6 +130,58 @@ export const cardSchema = z
         }
       });
     });
+
+    // Cap ids are unique, every cap_id resolves, and every cap is used.
+    const capIds = new Map<string, number>();
+    card.caps?.forEach((cap, k) => {
+      if (capIds.has(cap.id)) {
+        ctx.addIssue({ code: "custom", path: ["caps", k, "id"], message: "is a duplicate" });
+      } else {
+        capIds.set(cap.id, k);
+      }
+    });
+    const used = new Set<string>();
+    card.earn_rules?.forEach((rule, i) => {
+      // Empty ids already fail the field check; don't report them twice.
+      if (!rule.cap_id || rule.cap_id === NO_CAP) return;
+      used.add(rule.cap_id);
+      if (!capIds.has(rule.cap_id)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["earn_rules", i, "cap_id"],
+          message: `"${rule.cap_id}" is not defined in caps`,
+        });
+      }
+    });
+    // Only check usage when the rules are known; with earn_rules null, caps
+    // may be verified before the rules are.
+    if (card.earn_rules !== null) {
+      card.caps?.forEach((cap, k) => {
+        if (cap.id !== NO_CAP && !used.has(cap.id) && capIds.get(cap.id) === k) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["caps", k],
+            message: `("${cap.id}") is not used by any earn rule`,
+          });
+        }
+      });
+    }
+
+    // Cashback cards are expressed in the cash program; points cards are not.
+    if (card.card_type === "cashback" && card.program_id !== null && card.program_id !== CASH_PROGRAM_ID) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["program_id"],
+        message: `must be "${CASH_PROGRAM_ID}" for a cashback card`,
+      });
+    }
+    if (card.card_type === "points" && card.program_id === CASH_PROGRAM_ID) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["program_id"],
+        message: `must not be "${CASH_PROGRAM_ID}" for a points card`,
+      });
+    }
   });
 
 export type Card = z.infer<typeof cardSchema>;

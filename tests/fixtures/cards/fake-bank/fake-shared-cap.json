@@ -1,0 +1,44 @@
+{
+  "id": "fake-shared-cap",
+  "name": "FAKE Shared Cap Card",
+  "issuer": "fake-bank",
+  "country": "CA",
+  "currency": "CAD",
+  "network": "mastercard",
+  "card_type": "cashback",
+  "program_id": "cash-cad",
+  "annual_fee": 0,
+  "first_year_fee": 0,
+  "fx_fee_pct": 2.5,
+  "base_rate": 1,
+  "caps": [
+    {
+      "id": "combined-monthly",
+      "amount": 1000,
+      "period": "month"
+    }
+  ],
+  "earn_rules": [
+    {
+      "categories": [
+        "groceries"
+      ],
+      "rate": 4,
+      "cap_id": "combined-monthly",
+      "after_cap_rate": 1
+    },
+    {
+      "categories": [
+        "dining"
+      ],
+      "rate": 2,
+      "cap_id": "combined-monthly",
+      "after_cap_rate": 1
+    }
+  ],
+  "welcome_bonus": [],
+  "purchase_credits": [],
+  "perks": [],
+  "source_url": "https://example.com/fake-bank/fake-shared-cap",
+  "last_verified": "2026-01-01"
+}

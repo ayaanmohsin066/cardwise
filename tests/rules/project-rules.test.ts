@@ -34,6 +34,16 @@ describe("project rules", () => {
     expect(serverActions.map(rel)).toEqual([]);
   });
 
+  it("only valuePerDollar converts points to dollars", () => {
+    // Reading cents_per_point is the conversion. Only value.ts may do it
+    // (program-schema.ts defines the field).
+    const allowed = new Set(["src/engine/value.ts", "src/engine/program-schema.ts"]);
+    const offenders = sourceFiles("src")
+      .filter((p) => !allowed.has(rel(p).split("\\").join("/")))
+      .filter((p) => /cents_per_point/.test(readFileSync(p, "utf8")));
+    expect(offenders.map(rel)).toEqual([]);
+  });
+
   it("there is no middleware/proxy that could see requests", () => {
     const candidates = ["middleware.ts", "proxy.ts", "src/middleware.ts", "src/proxy.ts"];
     const present = candidates.filter((f) => {

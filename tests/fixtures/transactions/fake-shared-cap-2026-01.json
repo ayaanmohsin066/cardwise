@@ -1,0 +1,12 @@
+{
+  "card_id": "fake-shared-cap",
+  "note": "FAKE purchases for one month on fake-shared-cap, in statement order. Worked result in tests/fixtures/README.md.",
+  "transactions": [
+    { "statement_line": 1, "date": "2026-01-03", "category": "dining", "amount": 200 },
+    { "statement_line": 2, "date": "2026-01-05", "category": "groceries", "amount": 400 },
+    { "statement_line": 3, "date": "2026-01-12", "category": "dining", "amount": 300 },
+    { "statement_line": 4, "date": "2026-01-12", "category": "groceries", "amount": 150 },
+    { "statement_line": 5, "date": "2026-01-20", "category": "dining", "amount": 100 },
+    { "statement_line": 6, "date": "2026-01-25", "category": "groceries", "amount": 50 }
+  ]
+}

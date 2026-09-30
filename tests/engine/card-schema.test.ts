@@ -17,6 +17,7 @@ const unverified = (): Record<string, unknown> => ({
   first_year_fee: null,
   fx_fee_pct: null,
   base_rate: null,
+  caps: null,
   earn_rules: null,
   welcome_bonus: null,
   purchase_credits: null,
@@ -28,7 +29,7 @@ const unverified = (): Record<string, unknown> => ({
 const rule = (over: Record<string, unknown> = {}) => ({
   categories: ["groceries"],
   rate: null,
-  cap: null,
+  cap_id: null,
   after_cap_rate: null,
   ...over,
 });
@@ -55,7 +56,7 @@ describe("validateCard", () => {
     const r = validateCard(fakePoints());
     expect(r.ok).toBe(true);
     if (r.ok) {
-      expect(r.card.earn_rules?.[0].cap).toBe("none");
+      expect(r.card.earn_rules?.[0].cap_id).toBe("none");
       expect(r.card.perks?.[0].type).toBe("lounge");
     }
   });
@@ -95,13 +96,13 @@ describe("validateCard", () => {
 
   it("treats a missing term as an error, not as unknown", () => {
     for (const key of ["network", "card_type", "program_id", "annual_fee", "first_year_fee",
-      "fx_fee_pct", "base_rate", "earn_rules", "welcome_bonus", "purchase_credits", "perks"]) {
+      "fx_fee_pct", "base_rate", "caps", "earn_rules", "welcome_bonus", "purchase_credits", "perks"]) {
       expect(errorsOf(without(key))).toEqual([`${key} is missing (use null if unverified)`]);
     }
     const er = rule();
-    delete (er as Record<string, unknown>).cap;
+    delete (er as Record<string, unknown>).cap_id;
     expect(errorsOf({ ...unverified(), earn_rules: [er] })).toEqual([
-      "earn_rules[0].cap is missing (use null if unverified)",
+      "earn_rules[0].cap_id is missing (use null if unverified)",
     ]);
   });
 
@@ -154,24 +155,89 @@ describe("validateCard", () => {
       ]);
     });
 
-    it("accepts cap as null (unverified), \"none\" (uncapped) or an object", () => {
-      for (const cap of [null, "none", { amount: 500, period: "month" }, { amount: null, period: null }]) {
-        expect(errorsOf({ ...unverified(), earn_rules: [rule({ cap })] })).toEqual([]);
+    it("accepts cap_id as null (unverified) or \"none\" (uncapped) without caps", () => {
+      for (const cap_id of [null, "none"]) {
+        expect(errorsOf({ ...unverified(), earn_rules: [rule({ cap_id })] })).toEqual([]);
+        expect(errorsOf({ ...unverified(), caps: [], earn_rules: [rule({ cap_id })] })).toEqual([]);
       }
     });
 
-    it("reports errors inside a cap object precisely", () => {
+    it("rejects an empty cap_id", () => {
+      expect(errorsOf({ ...unverified(), earn_rules: [rule({ cap_id: "" })] })).toEqual([
+        "earn_rules[0].cap_id must be a non-empty string",
+      ]);
+    });
+  });
+
+  describe("caps", () => {
+    const cap = (over: Record<string, unknown> = {}) => ({
+      id: "shared",
+      amount: 1000,
+      period: "month",
+      ...over,
+    });
+
+    it("lets two rules with different rates share one cap", () => {
+      const rules = [
+        rule({ categories: ["groceries"], rate: 4, cap_id: "shared" }),
+        rule({ categories: ["dining"], rate: 2, cap_id: "shared" }),
+      ];
+      expect(errorsOf({ ...unverified(), caps: [cap()], earn_rules: rules })).toEqual([]);
+    });
+
+    it("allows unverified cap amount and period", () => {
+      const c = cap({ amount: null, period: null });
+      expect(errorsOf({ ...unverified(), caps: [c], earn_rules: [rule({ cap_id: "shared" })] })).toEqual([]);
+    });
+
+    it("fails when a cap_id is not defined in caps", () => {
       expect(
-        errorsOf({ ...unverified(), earn_rules: [rule({ cap: { amount: 500, period: "week" } })] }),
-      ).toEqual(["earn_rules[0].cap.period is invalid"]);
-      expect(
-        errorsOf({ ...unverified(), earn_rules: [rule({ cap: { period: "year" } })] }),
-      ).toEqual(["earn_rules[0].cap.amount is missing (use null if unverified)"]);
-      expect(errorsOf({ ...unverified(), earn_rules: [rule({ cap: "unlimited" })] })).toEqual([
-        "earn_rules[0].cap is invalid",
+        errorsOf({ ...unverified(), caps: [cap()], earn_rules: [rule({ cap_id: "shared" }), rule({ categories: ["gas"], cap_id: "other" })] }),
+      ).toEqual(['earn_rules[1].cap_id "other" is not defined in caps']);
+      expect(errorsOf({ ...unverified(), caps: null, earn_rules: [rule({ cap_id: "shared" })] })).toEqual([
+        'earn_rules[0].cap_id "shared" is not defined in caps',
       ]);
     });
 
+    it("fails when a cap is not used by any rule", () => {
+      expect(
+        errorsOf({ ...unverified(), caps: [cap(), cap({ id: "spare" })], earn_rules: [rule({ cap_id: "shared" })] }),
+      ).toEqual(['caps[1] ("spare") is not used by any earn rule']);
+    });
+
+    it("skips the usage check while earn_rules are unverified", () => {
+      expect(errorsOf({ ...unverified(), caps: [cap()], earn_rules: null })).toEqual([]);
+    });
+
+    it("rejects duplicate, malformed or reserved cap ids", () => {
+      expect(
+        errorsOf({ ...unverified(), caps: [cap(), cap()], earn_rules: [rule({ cap_id: "shared" })] }),
+      ).toEqual(["caps[1].id is a duplicate"]);
+      expect(errorsOf({ ...unverified(), caps: [cap({ id: "Shared Cap" })], earn_rules: [rule({ cap_id: "Shared Cap" })] })).toEqual([
+        "caps[0].id must be a lowercase slug",
+      ]);
+      expect(errorsOf({ ...unverified(), caps: [cap({ id: "none" })], earn_rules: [rule({ cap_id: "none" })] })).toEqual([
+        'caps[0].id must not be "none"',
+      ]);
+    });
+
+    it("rejects invalid cap values and unknown fields", () => {
+      expect(
+        errorsOf({ ...unverified(), caps: [cap({ amount: -1, period: "week", rate: 2 })], earn_rules: [rule({ cap_id: "shared" })] }),
+      ).toEqual([
+        "caps[0].amount is invalid",
+        "caps[0].period is invalid",
+        "caps[0].rate is not a known field",
+      ]);
+      const c = cap();
+      delete (c as Record<string, unknown>).period;
+      expect(errorsOf({ ...unverified(), caps: [c], earn_rules: [rule({ cap_id: "shared" })] })).toEqual([
+        "caps[0].period is missing (use null if unverified)",
+      ]);
+    });
+  });
+
+  describe("earn_rules (values)", () => {
     it("rejects negative rates", () => {
       expect(
         errorsOf({ ...unverified(), earn_rules: [rule({ rate: -1, after_cap_rate: -1 })] }),
@@ -181,6 +247,23 @@ describe("validateCard", () => {
     it("must be an array or null", () => {
       expect(errorsOf({ ...unverified(), earn_rules: {} })).toEqual(["earn_rules is invalid"]);
       expect(errorsOf({ ...unverified(), earn_rules: [1] })).toEqual(["earn_rules[0] is invalid"]);
+    });
+  });
+
+  describe("program_id vs card_type", () => {
+    it("requires cashback cards to use cash-cad", () => {
+      expect(errorsOf({ ...unverified(), card_type: "cashback", program_id: "cash-cad" })).toEqual([]);
+      expect(errorsOf({ ...unverified(), card_type: "cashback", program_id: null })).toEqual([]);
+      expect(errorsOf({ ...unverified(), card_type: "cashback", program_id: "some-points" })).toEqual([
+        'program_id must be "cash-cad" for a cashback card',
+      ]);
+    });
+
+    it("forbids cash-cad on points cards", () => {
+      expect(errorsOf({ ...unverified(), card_type: "points", program_id: "cash-cad" })).toEqual([
+        'program_id must not be "cash-cad" for a points card',
+      ]);
+      expect(errorsOf({ ...unverified(), card_type: null, program_id: "cash-cad" })).toEqual([]);
     });
   });
 

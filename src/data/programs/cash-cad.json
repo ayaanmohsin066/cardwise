@@ -1,0 +1,12 @@
+{
+  "id": "cash-cad",
+  "name": "Cash back (CAD)",
+  "redemptions": [
+    {
+      "method": "cash",
+      "cents_per_point": 1,
+      "is_estimate": false,
+      "notes": "Built-in unit, not an issuer program. Cashback rates are written in these points: 2% back is 2 points per $1, and 1 point is 1 cent."
+    }
+  ]
+}

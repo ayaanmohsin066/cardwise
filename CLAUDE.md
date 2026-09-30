@@ -38,13 +38,22 @@ does.
 - The Zod schemas in `src/engine/*-schema.ts` are the single source of truth. Types come from `z.infer`, so don't hand-write parallel types or validators.
 - Every key is required. `null` means "not yet verified".
 - A list that is `null` is unverified. A list that is `[]` has been verified to have none.
-- A cap is `null` (unverified), `"none"` (verified uncapped) or `{amount, period}`.
-- Rates are percent when `card_type` is `"cashback"`, and points per CAD 1 when it is `"points"`.
+- Caps are defined once per card in `caps: [{id, amount, period}]`, and earn rules point to them with `cap_id`. That lets several rules share one cap.
+  - `cap_id` is `null` (unverified), `"none"` (verified uncapped) or the id of an entry in `caps`.
+  - Every `cap_id` must exist in `caps`, and every cap must be used by at least one rule.
+  - Each rule keeps its own `after_cap_rate`.
+- **Every rate is points per $1**, and so is every welcome-bonus amount. Cashback cards use the built-in program `cash-cad` (1 point = 1 cent), so 2% back is `rate: 2`, and a $100 cash bonus is 10000.
+  - `card_type` is for display only. It never changes how a rate is read.
+  - Cashback cards must use `cash-cad`, and points cards must not.
+- **Only `valuePerDollar()` (`src/engine/value.ts`) converts points to dollars.** No other code may read `cents_per_point` or do its own points-to-dollars maths. `tests/rules/` enforces this.
+  - All points-to-dollars conversion goes through `valuePerDollar()`; reviewers should reject any other conversion.
+- Shared caps are applied in posting order (by date, then statement order). The LP value is an upper bound and is never shown to the user. See `docs/decisions.md`.
 - Earn rules only use categories from `CATEGORIES` (`src/engine/categories.ts`). A category may appear in at most one earn rule per card.
 - A card's `issuer` must be an id in `src/data/issuers.json`, and it is also the card's directory name. `program_id` must match a file in `src/data/programs/`.
 - A redemption with `is_estimate: true` must explain the basis for the estimate in `notes`.
 - Test fixtures live in `tests/fixtures/` and are clearly fake: the issuer is `fake-bank`, URLs are on `example.com`, and names start with "FAKE". Never put real card data there, and never put fixture data in `src/data`.
 - `docs/legacy-bugs.md` lists the regression tests each future phase has to add.
+- `docs/decisions.md` records settled design decisions. Follow them rather than reopening them.
 
 ## Commands
 

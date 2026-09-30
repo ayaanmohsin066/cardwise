@@ -6,21 +6,35 @@
   "currency": "CAD",
   "network": "mastercard",
   "card_type": "cashback",
-  "program_id": null,
+  "program_id": "cash-cad",
   "annual_fee": 100,
   "first_year_fee": 100,
   "fx_fee_pct": 2.5,
   "base_rate": 1,
+  "caps": [
+    {
+      "id": "groceries-dining-monthly",
+      "amount": 500,
+      "period": "month"
+    }
+  ],
   "earn_rules": [
     {
-      "categories": ["groceries", "dining"],
+      "categories": [
+        "groceries",
+        "dining"
+      ],
       "rate": 5,
-      "cap": { "amount": 500, "period": "month" },
+      "cap_id": "groceries-dining-monthly",
       "after_cap_rate": 1
     }
   ],
   "welcome_bonus": [
-    { "points_or_cash": 100, "min_spend": 1000, "window_months": 3 }
+    {
+      "points_or_cash": 10000,
+      "min_spend": 1000,
+      "window_months": 3
+    }
   ],
   "purchase_credits": [],
   "perks": [

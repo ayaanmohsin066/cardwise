@@ -11,17 +11,40 @@
   "first_year_fee": 0,
   "fx_fee_pct": 0,
   "base_rate": 1,
+  "caps": [],
   "earn_rules": [
-    { "categories": ["travel"], "rate": 3, "cap": "none", "after_cap_rate": null },
-    { "categories": ["gas", "transit"], "rate": 2, "cap": null, "after_cap_rate": null }
+    {
+      "categories": [
+        "travel"
+      ],
+      "rate": 3,
+      "cap_id": "none",
+      "after_cap_rate": null
+    },
+    {
+      "categories": [
+        "gas",
+        "transit"
+      ],
+      "rate": 2,
+      "cap_id": null,
+      "after_cap_rate": null
+    }
   ],
   "welcome_bonus": [
-    { "points_or_cash": 10000, "min_spend": 1000, "window_months": 3 }
+    {
+      "points_or_cash": 10000,
+      "min_spend": 1000,
+      "window_months": 3
+    }
   ],
   "purchase_credits": [
     {
       "description": "FAKE: $100 annual travel credit",
-      "merchant_keywords": ["fake air", "fake hotels"],
+      "merchant_keywords": [
+        "fake air",
+        "fake hotels"
+      ],
       "amount": 100,
       "period": "year"
     }
