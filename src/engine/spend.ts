@@ -24,6 +24,8 @@ export interface StatementSummary {
   interest: CAD;
   /** Payments and reward credits, as a positive number. Not spend. */
   payments: CAD;
+  /** Issuer statement credits (kind "credit"), as a positive number. Not spend. */
+  statement_credits: CAD;
 }
 
 // Sum in integer cents so totals don't drift.
@@ -32,7 +34,7 @@ const cents = toCents;
 /** Totals for one card's statement. Refunds reduce their category's spend. */
 export function summarizeStatement(items: readonly CategorizedTransaction[]): StatementSummary {
   const byCat = Object.fromEntries(CATEGORIES.map((c) => [c, 0])) as Record<Category, number>;
-  let purchases = 0, refunds = 0, foreign = 0, fees = 0, interest = 0, payments = 0;
+  let purchases = 0, refunds = 0, foreign = 0, fees = 0, interest = 0, payments = 0, credits = 0;
 
   for (const { transaction: t, category } of items) {
     const c = cents(t.amount_cad);
@@ -52,6 +54,9 @@ export function summarizeStatement(items: readonly CategorizedTransaction[]): St
         break;
       case "payment":
         payments += -c;
+        break;
+      case "credit":
+        credits += -c;
         break;
     }
   }
@@ -73,5 +78,6 @@ export function summarizeStatement(items: readonly CategorizedTransaction[]): St
     fees: fees / 100,
     interest: interest / 100,
     payments: payments / 100,
+    statement_credits: credits / 100,
   };
 }

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { formatIssues, genericError, isoDate, nonEmptyString } from "./schema-utils";
 
-export const TRANSACTION_KINDS = ["purchase", "refund", "payment", "fee", "interest"] as const;
+export const TRANSACTION_KINDS = ["purchase", "refund", "payment", "fee", "interest", "credit"] as const;
 export const CONFIDENCES = ["high", "low"] as const;
 
 /**
@@ -10,6 +10,9 @@ export const CONFIDENCES = ["high", "low"] as const;
  * Sign convention: `amount_cad` is positive for money charged to the card
  * (purchases, fees, interest) and negative for credits (refunds, payments).
  * A refund is a negative purchase: it reduces category spend and points.
+ * "credit" is an issuer statement credit for one of the card's purchase
+ * credits (see classifyStatementCredits): never category spend or points,
+ * counted only as credit used.
  */
 export const transactionSchema = z.strictObject({
   id: nonEmptyString,

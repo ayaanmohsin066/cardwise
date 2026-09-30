@@ -21,3 +21,15 @@ export function valuePerDollar(
   if (rate === null || redemption.cents_per_point === null) return null;
   return (rate * redemption.cents_per_point) / 100;
 }
+
+/**
+ * The inverse, for reading a statement: how many points a dollar amount of
+ * rewards represents (e.g. $32.00 of cash back in "cash-cad" is 3,200 points).
+ * Built on valuePerDollar so there is still one conversion rule. Returns null
+ * when the redemption value is unverified or zero.
+ */
+export function pointsFromDollars(dollars: number, program: Program, redemptionMethod: string): Term<number> {
+  const perPoint = valuePerDollar(1, program, redemptionMethod);
+  if (perPoint === null || perPoint === 0) return null;
+  return dollars / perPoint;
+}

@@ -45,6 +45,9 @@
         "fake air",
         "fake hotels"
       ],
+      "statement_keywords": [
+        "fake travel credit"
+      ],
       "amount": 100,
       "period": "year"
     }

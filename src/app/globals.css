@@ -11,6 +11,15 @@
   --review: #fef3c7;
   --review-border: #f59e0b;
   --danger: #b91c1c;
+  /* Charts: validated categorical slots (dataviz reference palette), chrome. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --chart-grid: #e1e0d9;
+  --chart-axis: #c3c2b7;
+  --chart-ink-muted: #898781;
+  --meter-track: #cde2fb;
+  --meter-fill: #2a78d6;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +34,14 @@
     --review: #422006;
     --review-border: #d97706;
     --danger: #f87171;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --chart-grid: #2c2c2a;
+    --chart-axis: #383835;
+    --chart-ink-muted: #898781;
+    --meter-track: #104281;
+    --meter-fill: #3987e5;
   }
 }
 
@@ -39,6 +56,14 @@
   --review: #422006;
   --review-border: #d97706;
   --danger: #f87171;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --chart-grid: #2c2c2a;
+  --chart-axis: #383835;
+  --chart-ink-muted: #898781;
+  --meter-track: #104281;
+  --meter-fill: #3987e5;
 }
 
 @theme inline {
@@ -52,6 +77,8 @@
   --color-review: var(--review);
   --color-review-border: var(--review-border);
   --color-danger: var(--danger);
+  --color-meter-track: var(--meter-track);
+  --color-meter-fill: var(--meter-fill);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

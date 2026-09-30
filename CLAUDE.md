@@ -69,11 +69,30 @@ does.
   - Unmatched lines go to "other" with low confidence.
 - **Overrides:** user corrections are keyed by `overrideKey()` (normalized description, with tokens containing digits dropped) and applied before rules.
   - They're stored per card in localStorage (`src/app/lib/overrides-storage.ts`) and hold only merchant key → category.
+  - The only other thing persisted is the rounding mode per card (one word).
   - Nothing else from a statement is persisted.
 - **Refund floor is display-only.** `spend_by_category` is floored at $0 for the summary UI only. Points and value maths use raw signed amounts (`amount_cad`, `net_by_category`), which may be negative. See `docs/decisions.md`.
 - **Money:** round with `toCents()` / `roundCents()` (`money.ts`), never `Math.round(x * 100)`.
 - **Network:** `tests/rules/` fails if anything in `src/` calls `fetch`, `XMLHttpRequest`, `sendBeacon`, `WebSocket` or `EventSource`. `src/app/lib/catalog.ts` is `server-only`; it reads only card and issuer JSON.
 - **Dev mode:** FAKE fixture cards appear in the card picker only under `next dev`. Production builds show "No verified cards yet" until real cards exist.
+
+## Benefits and statement check (Phase 3)
+
+- **Points:** `earnPoints()` / `pointsEvaluator()` in `points.ts` share **one** implementation (`run`) of the points rules. Never write a second one.
+  - Caps apply in posting order (date, then `statement_line`), per calendar period.
+  - Refunds are raw signed amounts.
+  - `null` terms produce unverified amounts, never 0.
+- **Refunds** are matched to an earlier purchase (same `overrideKey` merchant, most recent with enough left) and reverse what that purchase earned. Unmatched refunds are low confidence and use the period order.
+- **Statement credits:** `classifyStatementCredits()` must run before `categorizeAll` (the `Importer` does this). Lines matching a purchase credit's `statement_keywords` become kind `"credit"`: no category, no points, counted only as credit used.
+- **Rounding:** `reconcile()` checks per-transaction and per-statement rounding for an exact match. The matched mode is saved per card (`src/app/lib/rounding-storage.ts`) and passed back as `rounding_mode`.
+- **`computeBenefits()`** (`benefits.ts`) produces points and $ per category and per transaction, cap usage, credits, the FX estimate, fees, net value and the list of unverified items. Anything unverified is left out of totals and listed in `unverified` / `net_value_excludes`.
+- **Dollars:** everything goes through `valuePerDollar()`. The value of N points is `valuePerDollar(N, program, method)`. `pointsFromDollars()` is its inverse, for reading cash-back statement totals.
+- **`reconcile()`** only *suggests* category changes. The UI saves an accepted one as an override. The search is bounded by `max_evaluations`.
+- **UI:** `Importer` holds all per-card state and derives reports with `useMemo`, not effects. Charts follow the dataviz rules:
+  - one axis;
+  - the validated colours `--series-1..3`, with each card keeping a fixed colour slot;
+  - a legend, direct labels, a tooltip and a "Show as table" alternative.
+- The rules in `docs/decisions.md` ("Benefits engine rules") are the spec.
 
 ## Commands
 

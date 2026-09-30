@@ -12,6 +12,7 @@ import {
   type Transaction,
 } from "@/engine";
 import { DATA_DIR, FIXTURES_DIR, loadCardFiles, loadJson, loadProgramFiles } from "../helpers/data-files";
+import { ingestStatement } from "../helpers/statements";
 
 const cards = loadCardFiles(join(FIXTURES_DIR, "cards"));
 const programs = loadProgramFiles(join(FIXTURES_DIR, "programs"));
@@ -92,6 +93,12 @@ describe("transaction fixtures", () => {
     const s = summarizeStatement(categorizeAll(transactions, rules.rules));
     expect(s.spend_by_category).toMatchObject({ groceries: 600, dining: 600 });
     expect(s.purchases).toBe(1200);
+  });
+
+  it("statements/fake-shared-cap-2026-01.csv ingests to exactly these Transactions", () => {
+    const r = ingestStatement("fake-shared-cap-2026-01.csv");
+    expect(r.errors).toEqual([]);
+    expect(r.transactions).toEqual(transactions);
   });
 
   it("is in posting order with statement lines 1..n and the line 3/4 same-date tie", () => {

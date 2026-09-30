@@ -6,8 +6,8 @@ so the rebuild can't repeat it.
 
 | # | bug | legacy location | regression test lands in |
 |---|---|---|---|
-| 1 | After-cap rate hard-coded to 1× | `solve()`: `Z[i,j]` objective coefficient is `-cpp/100` | **Phase 3** (benefits) |
-| 2 | Refunds ignored instead of netted | `build_spending_profile()`: `if amount<=0: continue` | **Phase 2** (ingest/categorize): spend done ✅. Points half in **Phase 3** |
+| 1 | After-cap rate hard-coded to 1× | `solve()`: `Z[i,j]` objective coefficient is `-cpp/100` | **Phase 3** (benefits) ✅ |
+| 2 | Refunds ignored instead of netted | `build_spending_profile()`: `if amount<=0: continue` | **Phase 2** (ingest/categorize) ✅ spend; **Phase 3** ✅ points |
 | 3 | Loose keyword matching | `classify_transaction()` and the `*_KEYWORDS` tuples | **Phase 2** (ingest/categorize) ✅ |
 | 4 | Robustness score counts the base case | `robustness_analysis()`: `run("Base", ...)` goes into the score | **Phase 4** (optimizer analysis) |
 
@@ -16,10 +16,14 @@ so the rebuild can't repeat it.
 **Legacy behaviour:** spend above a category cap (`Z[i,j]`) always earns 1×,
 whatever the card's real post-cap rate is.
 
-**Required:** post-cap spend earns the earn rule's `after_cap_rate`, falling
-back to the card's `base_rate`. If both are `null`, the result is marked
-unverified. It must not assume a rate. When several rules share one cap
-(`cap_id`), each rule's spend above the shared cap earns that rule's own
+**Status:** done, in `tests/engine/points.test.ts` ("legacy bug 1"): 2,700 at
+`after_cap_rate` 1, 2,900 at 2, and the unverified case.
+
+**Required:** post-cap spend earns the earn rule's own `after_cap_rate`. If that
+is `null`, the over-cap spend is reported as unverified and left out of totals.
+There is no fallback to `base_rate`, because a `null` term is never replaced
+with a guess (`docs/decisions.md`, Phase 3 rule 2). When several rules share one
+cap (`cap_id`), each rule's spend above the shared cap earns that rule's own
 `after_cap_rate`.
 
 **Test:** using `fake-grocery-cash` (groceries + dining 5 pts/$1, sharing the
@@ -45,8 +49,8 @@ row changes no category.
 and use real fixture CSVs. Refunds keep their negative `amount_cad` and the
 merchant's category (`tests/engine/categorize.test.ts`).
 
-**Still to do in Phase 3:** refunds must also reduce earned points. The Phase 3
-calculator needs a regression test for this. With `fake-grocery-cash`, a $100
+**Points (Phase 3):** done, in `tests/engine/points.test.ts` and
+`benefits.test.ts`. Refunds reduce earned points. With `fake-grocery-cash`, a $100
 grocery purchase and a −$30 refund must earn (100 − 30) × 5 = **350 pts**, not
 500. Add a second test where the refund exceeds the period's purchases: a $20
 purchase and a −$50 refund must give **−150 pts**, not 0 (see

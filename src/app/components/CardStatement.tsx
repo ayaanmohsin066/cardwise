@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import {
-  categorizeAll,
   isUsablePreset,
   normalizeRows,
   parseCsv,
@@ -11,6 +10,7 @@ import {
   setOverride,
   suggestMapping,
   summarizeStatement,
+  type CategorizedTransaction,
   type Category,
   type CsvFormat,
   type Overrides,
@@ -18,8 +18,6 @@ import {
   type Transaction,
 } from "@/engine";
 import type { CardOption } from "../lib/catalog";
-import { loadOverrides, saveOverrides } from "../lib/overrides-storage";
-import { MERCHANT_RULES } from "../lib/rules";
 import { draftToMapping, emptyDraft, MappingForm, type MappingDraft } from "./MappingForm";
 import { ReviewTable } from "./ReviewTable";
 import { StatementSummary } from "./StatementSummary";
@@ -39,9 +37,18 @@ function draftFor(columns: string[]): MappingDraft {
 interface Props {
   card: CardOption;
   issuerName: string;
+  hasTransactions: boolean;
+  onTransactions: (t: Transaction[] | null) => void;
+  /** Categorized transactions for this card (computed by the parent). */
+  categorized: CategorizedTransaction[];
+  overrides: Overrides;
+  onOverrides: (o: Overrides) => void;
+  saveFailed: boolean;
 }
 
-export function CardStatement({ card, issuerName }: Props) {
+export function CardStatement({
+  card, issuerName, hasTransactions, onTransactions, categorized, overrides, onOverrides, saveFailed,
+}: Props) {
   const preset = presetForIssuer(card.issuer);
   const usable = isUsablePreset(preset);
 
@@ -50,22 +57,14 @@ export function CardStatement({ card, issuerName }: Props) {
   const [readError, setReadError] = useState<string | null>(null);
   const [format, setFormat] = useState<CsvFormat>(usable && preset.format ? preset.format : DEFAULT_FORMAT);
   const [draft, setDraft] = useState<MappingDraft>(emptyDraft());
-  const [transactions, setTransactions] = useState<Transaction[] | null>(null);
   const [rowErrors, setRowErrors] = useState<RowError[]>([]);
-  // Created after the user adds the card, so reading localStorage here is safe.
-  const [overrides, setOverrides] = useState<Overrides>(() => loadOverrides(card.id));
-  const [saveFailed, setSaveFailed] = useState(false);
 
   const parsed = useMemo(() => parseCsv(text, format.has_header), [text, format.has_header]);
   const mapping = draftToMapping(draft);
-  const categorized = useMemo(
-    () => (transactions ? categorizeAll(transactions, MERCHANT_RULES, overrides) : []),
-    [transactions, overrides],
-  );
   const summary = useMemo(() => summarizeStatement(categorized), [categorized]);
 
   async function onFile(file: File | undefined) {
-    setTransactions(null);
+    onTransactions(null);
     setRowErrors([]);
     setReadError(null);
     if (!file) return;
@@ -83,7 +82,7 @@ export function CardStatement({ card, issuerName }: Props) {
   function onFormat(next: CsvFormat) {
     if (next.has_header !== format.has_header) {
       setDraft(draftFor(parseCsv(text, next.has_header).columns));
-      setTransactions(null);
+      onTransactions(null);
     }
     setFormat(next);
   }
@@ -91,14 +90,11 @@ export function CardStatement({ card, issuerName }: Props) {
   function runImport() {
     if (!mapping) return;
     const result = normalizeRows(parsed.rows, mapping, format);
-    setTransactions(result.transactions);
+    onTransactions(result.transactions);
     setRowErrors(result.errors);
   }
 
-  function updateOverrides(next: Overrides) {
-    setOverrides(next);
-    setSaveFailed(!saveOverrides(card.id, next));
-  }
+  const updateOverrides = onOverrides;
 
   const onCategory = (description: string, category: Category) =>
     updateOverrides(setOverride(overrides, description, category));
@@ -163,7 +159,7 @@ export function CardStatement({ card, issuerName }: Props) {
               disabled={!mapping}
               onClick={runImport}
             >
-              {transactions ? "Re-import with these columns" : "Import transactions"}
+              {hasTransactions ? "Re-import with these columns" : "Import transactions"}
             </button>
           </div>
         </div>
@@ -172,7 +168,7 @@ export function CardStatement({ card, issuerName }: Props) {
         <p className="text-sm text-danger">That file has no rows.</p>
       )}
 
-      {transactions && (
+      {hasTransactions && (
         <div className="flex flex-col gap-5 border-t border-border pt-4">
           {rowErrors.length > 0 && (
             <div className="rounded-md border border-danger px-3 py-2 text-sm">

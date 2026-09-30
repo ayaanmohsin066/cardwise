@@ -76,8 +76,13 @@ export const welcomeBonusSchema = z.strictObject({
 
 export const purchaseCreditSchema = z.strictObject({
   description: nonEmptyString,
-  /** Lowercase keywords used to match statement lines to this credit. */
+  /** Keywords matching purchases that are eligible for this credit (the merchant). */
   merchant_keywords: z.array(nonEmptyString),
+  /**
+   * Keywords identifying the issuer's own statement-credit line for this credit
+   * (e.g. "annual travel credit"). null until verified from a real statement.
+   */
+  statement_keywords: term(z.array(nonEmptyString)),
   amount: term(nonNegative),
   period: term(period),
 });

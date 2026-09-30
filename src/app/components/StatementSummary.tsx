@@ -8,7 +8,8 @@ export function StatementSummary({ summary }: { summary: Summary }) {
     ["Foreign-currency spending", summary.foreign_spend],
     ["Card fees", summary.fees],
     ["Interest", summary.interest],
-    ["Payments and credits", summary.payments],
+    ["Statement credits", summary.statement_credits],
+    ["Payments and reward redemptions", summary.payments],
   ] as const;
 
   return (

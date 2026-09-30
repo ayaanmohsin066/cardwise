@@ -24,4 +24,11 @@ export const KIND_LABELS: Record<TransactionKind, string> = {
   payment: "Payment",
   fee: "Card fee",
   interest: "Interest",
+  credit: "Statement credit",
 };
+
+const pts = new Intl.NumberFormat("en-CA", { maximumFractionDigits: 2 });
+export const formatPoints = (x: number) => pts.format(x);
+
+/** Series color for a card's fixed slot (1-3), as a CSS variable. */
+export const seriesColor = (slot: number) => `var(--series-${slot})`;

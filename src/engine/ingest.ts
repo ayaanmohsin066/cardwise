@@ -102,6 +102,8 @@ const FEE_PHRASES = [
   "frais de transaction etrangere", "frais d avance de fonds",
 ];
 const INTEREST_WORDS = ["interest", "interet", "interets"];
+/** Separately posted foreign-transaction fee lines (a subset of FEE_PHRASES). */
+const FX_FEE_PHRASES = ["foreign transaction fee", "frais de transaction etrangere"];
 const PAYMENT_WORDS = ["payment", "paiement"];
 const PAYMENT_REVERSAL_PHRASES = ["returned payment", "payment reversal", "paiement retourne"];
 /** Reward redemptions credited to the card are not refunds and don't reduce spend. */
@@ -112,6 +114,11 @@ const REWARD_CREDIT_PHRASES = [
 
 const matchesAny = (text: string, phrases: readonly string[]) =>
   phrases.some((p) => containsPhrase(text, p));
+
+/** True for a separately posted foreign-transaction fee line. */
+export function isFxFeeLine(t: Pick<Transaction, "kind" | "description">): boolean {
+  return t.kind === "fee" && matchesAny(t.description, FX_FEE_PHRASES);
+}
 
 /**
  * Decide what a line is from its description and signed CAD amount

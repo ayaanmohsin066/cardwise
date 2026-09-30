@@ -275,12 +275,18 @@ describe("validateCard", () => {
   });
 
   it("validates purchase_credits entries", () => {
-    const pc = { description: "", merchant_keywords: ["ok", ""], amount: 10, period: "decade" };
+    const pc = { description: "", merchant_keywords: ["ok", ""], statement_keywords: [""], amount: 10, period: "decade" };
     expect(errorsOf({ ...unverified(), purchase_credits: [pc] })).toEqual([
       "purchase_credits[0].description must be a non-empty string",
       "purchase_credits[0].merchant_keywords[1] must be a non-empty string",
+      "purchase_credits[0].statement_keywords[0] must be a non-empty string",
       "purchase_credits[0].period is invalid",
     ]);
+    const missing = { description: "x", merchant_keywords: [], amount: 10, period: "year" };
+    expect(errorsOf({ ...unverified(), purchase_credits: [missing] })).toEqual([
+      "purchase_credits[0].statement_keywords is missing (use null if unverified)",
+    ]);
+    expect(errorsOf({ ...unverified(), purchase_credits: [{ ...missing, statement_keywords: null }] })).toEqual([]);
   });
 
   it("validates perks, including their own source_url", () => {
