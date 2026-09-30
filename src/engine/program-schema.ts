@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { formatIssues, genericError, nonEmptyString, nonNegative, term } from "./schema-utils";
+import { formatIssues, genericError, httpsUrl, isoDate, nonEmptyString, nonNegative, term } from "./schema-utils";
 
 export const redemptionSchema = z
   .strictObject({
@@ -14,11 +14,20 @@ export const redemptionSchema = z
     error: "must explain the basis of an estimate",
   });
 
-export const programSchema = z.strictObject({
-  id: nonEmptyString,
-  name: nonEmptyString,
-  redemptions: z.array(redemptionSchema),
-});
+export const programSchema = z
+  .strictObject({
+    id: nonEmptyString,
+    name: nonEmptyString,
+    redemptions: z.array(redemptionSchema),
+    /** Issuer page the redemption values were checked against. null only for built-in units (cash-cad). */
+    source_url: term(httpsUrl),
+    /** When source_url was last checked. null exactly when source_url is null. */
+    last_verified: term(isoDate),
+  })
+  .refine((p) => (p.source_url === null) === (p.last_verified === null), {
+    path: ["last_verified"],
+    error: "must be set exactly when source_url is set",
+  });
 
 export type Program = z.infer<typeof programSchema>;
 export type Redemption = z.infer<typeof redemptionSchema>;

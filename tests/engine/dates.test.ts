@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addMonths, daysBetween, monthsCovered, periodKey } from "@/engine";
+import { addMonths, daysBetween, monthsCovered, periodBounds, periodKey } from "@/engine";
 
 describe("periodKey", () => {
   it("gives calendar month, quarter and year keys", () => {
@@ -36,5 +36,15 @@ describe("monthsCovered", () => {
     expect(monthsCovered(["2026-01-15", "2026-02-14"])).toBe(1);
     expect(monthsCovered(["2026-01-01", "2026-03-31"])).toBe(3);
     expect(monthsCovered(["2026-01-01", "2026-12-31"])).toBe(12);
+  });
+});
+
+describe("periodBounds", () => {
+  it("gives the first and last day of the calendar period", () => {
+    expect(periodBounds("2026-02-14", "month")).toEqual({ start: "2026-02-01", end: "2026-02-28" });
+    expect(periodBounds("2028-02-14", "month")).toEqual({ start: "2028-02-01", end: "2028-02-29" });
+    expect(periodBounds("2026-05-20", "quarter")).toEqual({ start: "2026-04-01", end: "2026-06-30" });
+    expect(periodBounds("2026-12-31", "quarter")).toEqual({ start: "2026-10-01", end: "2026-12-31" });
+    expect(periodBounds("2026-07-01", "year")).toEqual({ start: "2026-01-01", end: "2026-12-31" });
   });
 });

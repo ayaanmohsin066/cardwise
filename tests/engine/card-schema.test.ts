@@ -295,12 +295,22 @@ describe("validateCard", () => {
       summary: "x",
       conditions: null,
       requires_enrollment: "yes",
+      requires_charge_to_card: "sometimes",
       source_url: "http://example.com",
     };
     expect(errorsOf({ ...unverified(), perks: [perk] })).toEqual([
       "perks[0].type is invalid",
       "perks[0].requires_enrollment is invalid",
+      "perks[0].requires_charge_to_card is invalid",
       "perks[0].source_url must be an https:// URL",
+    ]);
+    // Required key: true, false and null (unverified) are all valid; missing is not.
+    const ok = { type: "lounge", summary: "x", conditions: null, requires_enrollment: null, source_url: "https://example.com/p" };
+    for (const v of [true, false, null]) {
+      expect(errorsOf({ ...unverified(), perks: [{ ...ok, requires_charge_to_card: v }] })).toEqual([]);
+    }
+    expect(errorsOf({ ...unverified(), perks: [ok] })).toEqual([
+      "perks[0].requires_charge_to_card is missing (use null if unverified)",
     ]);
   });
 });

@@ -14,5 +14,7 @@
       "is_estimate": true,
       "notes": "FAKE: illustrative estimate for tests."
     }
-  ]
+  ],
+  "source_url": "https://example.com/fake-bank/fake-points-program",
+  "last_verified": "2026-01-01"
 }

@@ -248,5 +248,21 @@
         "aliexpress"
       ]
     }
-  ]
+  ],
+  "nudge_merchants": {
+    "electronics_appliances": [
+      "best buy",
+      "the source",
+      "visions electronics",
+      "apple store",
+      "canada computers",
+      "memory express",
+      "staples",
+      "the brick",
+      "leon's",
+      "brault & martineau",
+      "tanguay",
+      "microsoft store"
+    ]
+  }
 }

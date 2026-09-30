@@ -9,7 +9,7 @@ choosing a different card, and how sensitive the answer is to your assumptions.
 
 All amounts are in Canadian dollars.
 
-> **Status:** redesign in progress. Statement import, categorization, the benefits report, the statement check and "Earn more" recommendations work. The card catalogue is waiting for verified card terms.
+> **Status:** redesign in progress. Statement import, categorization, the benefits report, the statement check, "Earn more" recommendations, redemption values and benefit reminders work. The card catalogue is waiting for verified card terms.
 
 ## Built on CardOpt by @srinihal007
 
@@ -32,7 +32,9 @@ Card terms come from each issuer's official page. Every card file records its
 app shows it as **"not yet verified"** and never guesses. Terms change, so check
 the issuer's page before you apply.
 
-CardOpt is an educational tool, not financial advice.
+To add a card, run `npm run new-card -- <issuer> <card-id>`. It creates a file with every field set to `null`, and you fill in only what the issuer's page states. `npm run card-status` flags cards whose terms haven't been re-checked in 180 days.
+
+CardOpt is an educational tool, not financial advice. Benefit reminders repeat the card's own terms and are for information only.
 
 ## Development
 

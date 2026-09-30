@@ -92,6 +92,12 @@ export const perkSchema = z.strictObject({
   summary: nonEmptyString,
   conditions: term(nonEmptyString),
   requires_enrollment: term(z.boolean()),
+  /**
+   * The issuer's terms say the purchase must be charged to this card for the
+   * perk to apply (e.g. travel insurance). null = not verified. Only `true`
+   * triggers the "charge it to this card" reminder.
+   */
+  requires_charge_to_card: term(z.boolean()),
   source_url: httpsUrl,
 });
 

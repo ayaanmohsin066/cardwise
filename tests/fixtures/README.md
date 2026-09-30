@@ -17,7 +17,7 @@ The numbers are round so that expected results can be worked out by hand:
 | `fake-points` | points | `fake-points-program` | $120 (first year $0) | 1 | travel 3 (`cap_id: "none"`, uncapped); gas + transit 2 (`cap_id: null`, **not yet verified**) | none |
 | `fake-shared-cap` | cashback | `cash-cad` | $0 | 1 | groceries 4, then 1; dining 2, then 1; **both share one cap** | `combined-monthly`: $1,000/month |
 
-`fake-points` has one purchase credit: $100/year at merchants matching "fake air" or "fake hotels". The issuer posts it as a line containing "fake travel credit" (`statement_keywords`).
+`fake-points` lists two FAKE perks: lounge access (requires enrollment; conditions and `requires_charge_to_card` not verified) and trip cancellation (`requires_charge_to_card: true`). `fake-grocery-cash`'s extended warranty also has `requires_charge_to_card: true`. `fake-points` also has one purchase credit: $100/year at merchants matching "fake air" or "fake hotels". The issuer posts it as a line containing "fake travel credit" (`statement_keywords`).
 
 `fake-points-program` redeems at 1.0¢ per point (`statement_credit`, fixed) or
 2.0¢ (`travel_transfer`, estimate).
@@ -99,5 +99,6 @@ file.
 | `debit-credit.csv` | debit and credit columns, MM/DD/YYYY, no FX column | refund as a credit, payment, cash-back redemption (not a refund), foreign transaction fee, a EUR purchase (low-confidence FX from the description), a bad date row and a bad amount row |
 | `fake-shared-cap-2026-01.csv` | same layout as `amount-currency.csv` | the shared-cap sequence from example C as a CSV. Ingests to exactly `transactions/fake-shared-cap-2026-01.json`; upload it on `fake-shared-cap` in dev to see 3,200 points = $32.00 |
 | `phase3-walkthrough.csv` | same layout as `amount-currency.csv`; for `fake-points` | a statement-credit line (FAKE TRAVEL CREDIT), interest, a matched refund (AIR CANADA) and an unmatched one (EXPEDIA). Points: exact 471.14, per line 470, per statement 471, so "471" matches only with per-statement rounding. Pinned in `tests/engine/walkthrough.test.ts` |
+| `phase5-perks.csv` | same layout as `amount-currency.csv` | an electronics purchase (BEST BUY), a flight, a FAKE AIR purchase (credit) and groceries, for the Perks and Redeem tabs |
 | `fr-headerless.csv` | no header, `;` delimiter, DD/MM/YYYY, decimal comma, purchases negative | French and accented text (`ÉPICERIE`, `INTÉRÊTS`, `FRAIS ANNUELS`, `PAIEMENT MERCI`), a refund written as a positive number, space-separated thousands |
 

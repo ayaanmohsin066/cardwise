@@ -240,3 +240,58 @@ accepted as written; 2 and 4 were accepted with the changes noted.
       or credit, or has a lower annual fee than the priciest current card.
     - Tested on three synthetic seeds: pruning never drops the best ongoing or
       first-year result.
+
+## Redemption values, perks and card entry (Phase 5, reviewed 2026-09-30)
+
+All accepted. Rule 4's travel reminder was changed in review (see below).
+
+1. **Redemption values.** `pointsValue()` in `value.ts` values a balance, and it
+   is built on `valuePerDollar()`, so there's one conversion rule. No other
+   file reads `cents_per_point` (tested).
+   - "Best" is the highest **verified, non-estimate** method. The gap is from
+     it to the lowest verified non-estimate method.
+   - An estimate that's worth more is shown separately as an estimate, with its
+     stated basis. It is never the headline.
+   - Cash-back cards show dollars only; there's nothing to compare.
+   - The balance the user types isn't saved anywhere.
+2. **Program provenance.** Programs gained `source_url` and `last_verified`,
+   which must be set together. Both are `null` only for built-in units
+   (`cash-cad`), which are never stale.
+3. **Perks** are listed verbatim from the card JSON. `null` conditions or
+   enrollment show as "details not verified", with a link to the perk's
+   `source_url`. `perks: null` means "not yet verified".
+4. **Nudges** are informational only, and the UI says so. Nudge text quotes
+   the perk's own `summary` and `conditions`; nothing is paraphrased into new
+   claims.
+   - **Protection:** a purchase at a merchant in
+     `merchant_rules.json → nudge_merchants.electronics_appliances` (merchant
+     names only, not a category), when the card lists purchase protection or
+     extended warranty.
+   - **Travel** *(revised in review)*: a travel purchase, only when a travel
+     perk has the explicit field **`requires_charge_to_card: true`**. The
+     field is a required key; `null` means unverified, which gives no
+     reminder, and the perk shows "details not verified". Conditions text is
+     never parsed; the earlier phrase heuristic was removed.
+   - **Enrollment:** only when `requires_enrollment` is `true`.
+   - **Credits:** a verified purchase credit with money left in the calendar
+     period containing today. That's based on the uploaded statements only,
+     and the UI says so.
+   - **Future field:** credit periods, like caps (Phase 3 rule 3), are calendar
+     periods for now. Many credits reset on the **cardmember year** (the card's
+     anniversary), which needs a future schema field (e.g. a `period_basis` on
+     `purchase_credits`, verified from the terms) plus the card's open date.
+     Until then, no other basis is guessed.
+5. **Card-entry tooling** (`tsx` scripts; the logic is pure and tested in
+   `src/engine/card-tools.ts`).
+   - `new-card` and `new-program` write a skeleton with every schema key; all
+     are `null` except id, issuer, CA and CAD. It **fails validation on
+     purpose** until name, source_url and last_verified are filled in, so a
+     half-entered card can't pass `npm test`. It refuses unknown issuers,
+     non-slug ids and overwrites.
+   - `card-status` and `program-status` list null counts and the
+     `last_verified` age, and exit 1 when anything is **stale (> 180 days) or
+     invalid**. Invalid was added to the brief's stale check so CI also catches
+     unfinished skeletons.
+   - `STATUS_TODAY` overrides the date for reproducible runs.
+6. **UI.** Each card panel has Benefits, Redeem and Perks tabs, following the
+   WAI-ARIA tabs pattern (arrow keys, Home/End, roving tab index).

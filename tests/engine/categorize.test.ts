@@ -21,7 +21,7 @@ const tx = (description: string, over: Partial<Transaction> = {}): Transaction =
   ...over,
 });
 
-const rules = (...r: MerchantRules["rules"]): MerchantRules => ({ version: 1, rules: r });
+const rules = (...r: MerchantRules["rules"]): MerchantRules => ({ version: 1, rules: r, nudge_merchants: { electronics_appliances: [] } });
 const seeded = seededRules();
 const cat = (d: string, r: MerchantRules = seeded) => {
   const c = categorize(tx(d), r);

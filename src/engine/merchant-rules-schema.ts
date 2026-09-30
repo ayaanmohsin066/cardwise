@@ -20,12 +20,30 @@ export const merchantRuleSchema = z.strictObject({
     .min(1, { error: "must list at least one keyword" }),
 });
 
+const merchantName = nonEmptyString.refine((k) => normalizeText(k) !== "", { error: "must contain a letter or digit" });
+
 export const merchantRulesSchema = z
   .strictObject({
     version: z.literal(1),
     rules: z.array(merchantRuleSchema),
+    /**
+     * Merchant groups used only for informational nudges (perks.ts), not for
+     * categories. Merchant names only.
+     */
+    nudge_merchants: z.strictObject({
+      /** Electronics and appliance stores: purchase protection / extended warranty reminders. */
+      electronics_appliances: z.array(merchantName),
+    }),
   })
-  .superRefine(({ rules }, ctx) => {
+  .superRefine(({ rules, nudge_merchants }, ctx) => {
+    const seenNudge = new Set<string>();
+    nudge_merchants.electronics_appliances.forEach((k, j) => {
+      const norm = normalizeText(k);
+      if (seenNudge.has(norm)) {
+        ctx.addIssue({ code: "custom", path: ["nudge_merchants", "electronics_appliances", j], message: `("${k}") is repeated` });
+      }
+      seenNudge.add(norm);
+    });
     const ruleIds = new Set<string>();
     const keywordOwner = new Map<string, number>();
     rules.forEach((rule, i) => {

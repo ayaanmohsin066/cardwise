@@ -58,7 +58,16 @@
       "summary": "FAKE: 2 lounge visits per year.",
       "conditions": null,
       "requires_enrollment": true,
+      "requires_charge_to_card": null,
       "source_url": "https://example.com/fake-bank/fake-points/lounge"
+    },
+    {
+      "type": "trip_cancellation",
+      "summary": "FAKE: trip cancellation cover.",
+      "conditions": "FAKE: the trip must be charged to the card.",
+      "requires_enrollment": false,
+      "requires_charge_to_card": true,
+      "source_url": "https://example.com/fake-bank/fake-points/trip"
     }
   ],
   "source_url": "https://example.com/fake-bank/fake-points",

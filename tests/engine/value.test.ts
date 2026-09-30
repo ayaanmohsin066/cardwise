@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { pointsFromDollars, validateProgram, valuePerDollar, type Program } from "@/engine";
+import { pointsFromDollars, pointsValue, validateProgram, valuePerDollar, type Program } from "@/engine";
 import { DATA_DIR, FIXTURES_DIR, loadJson } from "../helpers/data-files";
 
 const load = (p: string): Program => {
@@ -35,6 +35,8 @@ describe("valuePerDollar", () => {
     const p: Program = {
       id: "p",
       name: "P",
+      source_url: null,
+      last_verified: null,
       redemptions: [{ method: "m", cents_per_point: null, is_estimate: false, notes: null }],
     };
     expect(valuePerDollar(5, p, "m")).toBeNull();
@@ -55,13 +57,28 @@ describe("pointsFromDollars", () => {
   });
 
   it("returns null when the value is unverified or zero", () => {
-    const unverified: Program = { id: "p", name: "P", redemptions: [{ method: "m", cents_per_point: null, is_estimate: false, notes: null }] };
+    const unverified: Program = { id: "p", name: "P", source_url: null, last_verified: null, redemptions: [{ method: "m", cents_per_point: null, is_estimate: false, notes: null }] };
     expect(pointsFromDollars(5, unverified, "m")).toBeNull();
-    const zero: Program = { id: "z", name: "Z", redemptions: [{ method: "m", cents_per_point: 0, is_estimate: false, notes: null }] };
+    const zero: Program = { id: "z", name: "Z", source_url: null, last_verified: null, redemptions: [{ method: "m", cents_per_point: 0, is_estimate: false, notes: null }] };
     expect(pointsFromDollars(5, zero, "m")).toBeNull();
   });
 
   it("throws on an unknown method", () => {
     expect(() => pointsFromDollars(1, cash, "nope")).toThrow();
+  });
+});
+
+describe("pointsValue", () => {
+  it("values a balance through the same rule as valuePerDollar", () => {
+    expect(pointsValue(3200, cash, "cash")).toBeCloseTo(32, 9);
+    expect(pointsValue(10000, fakePoints, "statement_credit")).toBeCloseTo(100, 9);
+    expect(pointsValue(10000, fakePoints, "travel_transfer")).toBeCloseTo(200, 9);
+    expect(pointsValue(0, cash, "cash")).toBe(0);
+  });
+
+  it("is null when unverified and throws on an unknown method", () => {
+    const unverified: Program = { id: "p", name: "P", source_url: null, last_verified: null, redemptions: [{ method: "m", cents_per_point: null, is_estimate: false, notes: null }] };
+    expect(pointsValue(100, unverified, "m")).toBeNull();
+    expect(() => pointsValue(1, cash, "nope")).toThrow();
   });
 });

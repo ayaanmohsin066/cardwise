@@ -51,3 +51,14 @@ export function monthsCovered(dates: readonly string[]): number {
   const days = daysBetween(sorted[0], sorted[sorted.length - 1]) + 1;
   return Math.max(1, Math.round(days / AVG_DAYS_PER_MONTH));
 }
+
+/** First and last day (inclusive) of the calendar period containing `iso`. */
+export function periodBounds(iso: string, period: Period): { start: string; end: string } {
+  const { y, m } = parts(iso);
+  const firstMonth = period === "month" ? m : period === "quarter" ? Math.floor((m - 1) / 3) * 3 + 1 : 1;
+  const months = period === "month" ? 1 : period === "quarter" ? 3 : 12;
+  const start = `${y}-${pad(firstMonth)}-01`;
+  const end = addMonths(start, months);
+  const endDate = new Date(Date.UTC(Number(end.slice(0, 4)), Number(end.slice(5, 7)) - 1, 0));
+  return { start, end: endDate.toISOString().slice(0, 10) };
+}

@@ -33,3 +33,13 @@ export function pointsFromDollars(dollars: number, program: Program, redemptionM
   if (perPoint === null || perPoint === 0) return null;
   return dollars / perPoint;
 }
+
+/**
+ * Dollar value of a points balance redeemed by `redemptionMethod`. The
+ * companion to valuePerDollar for balances (a balance of N points is "N
+ * points per $1 × $1"), so there is still one conversion rule. null when the
+ * redemption's value is unverified. Throws on an unknown method.
+ */
+export function pointsValue(points: number, program: Program, redemptionMethod: string): Term<number> {
+  return valuePerDollar(points, program, redemptionMethod);
+}

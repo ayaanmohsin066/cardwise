@@ -113,6 +113,16 @@ does.
 - **Synthetic cards:** `tests/helpers/synthetic.ts` generates FAKE catalogue cards for scale tests. Never use them outside tests.
 - The rules in `docs/decisions.md` ("Earn more") are the spec.
 
+## Redemption, perks and card entry (Phase 5)
+
+- **Balances:** value them with `pointsValue()` (`value.ts`) only.
+  - "Best" means verified and not an estimate.
+  - Estimates are always labelled, with their `notes` basis.
+- **Perk text is quoted verbatim** from the card JSON. Never state coverage amounts, limits or conditions that aren't there; `null` means "details not verified", with the perk's `source_url`.
+- **Perk charge rule:** perks carry `requires_charge_to_card` (true/false, or `null` = unverified). The travel "charge it to this card" reminder fires only on `true`. Never infer it from `conditions` text.
+- **Nudges** (`perks.ts`) are informational, not advice. Electronics and appliance merchants for nudges live in `merchant_rules.json → nudge_merchants`, as merchant names only.
+- **Adding a card or program:** run `npm run new-card -- <issuer> <card-id>` (or `new-program -- <id>`), fill it in from the official page, then `npm test && npm run card-status`. The status scripts exit 1 on stale (> 180 days) or invalid data.
+
 ## Commands
 
 - `npm run dev`: dev server
@@ -120,3 +130,5 @@ does.
 - `npm run lint`: ESLint
 - `npm run typecheck`: `tsc --noEmit`
 - `npm run build`: production build
+- `npm run new-card -- <issuer> <card-id>` / `npm run new-program -- <program-id>`: create a skeleton
+- `npm run card-status` / `npm run program-status`: null counts and staleness; exits 1 on stale or invalid data

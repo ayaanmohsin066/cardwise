@@ -11,7 +11,11 @@
     "test:watch": "vitest",
     "typecheck": "next typegen && tsc --noEmit",
     "predev": "node scripts/copy-solver-wasm.mjs",
-    "prebuild": "node scripts/copy-solver-wasm.mjs"
+    "prebuild": "node scripts/copy-solver-wasm.mjs",
+    "new-card": "tsx scripts/new-card.ts",
+    "card-status": "tsx scripts/card-status.ts",
+    "new-program": "tsx scripts/new-program.ts",
+    "program-status": "tsx scripts/program-status.ts"
   },
   "dependencies": {
     "highs": "^1.15.3",
@@ -32,6 +36,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.7",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.2"
   }

@@ -43,6 +43,7 @@
       "summary": "FAKE: doubles manufacturer warranty up to 1 extra year.",
       "conditions": "FAKE: item must be bought in full with the card.",
       "requires_enrollment": false,
+      "requires_charge_to_card": true,
       "source_url": "https://example.com/fake-bank/fake-grocery-cash/warranty"
     }
   ],
