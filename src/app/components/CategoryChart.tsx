@@ -29,23 +29,23 @@ export function CategoryChart({ rows, hasValue, color, showPoints = true }: Prop
     .sort((a, b) => b.amount - a.amount);
   const height = Math.max(120, data.length * 36 + 40);
 
-  if (data.length === 0) return <p className="text-sm text-muted">No spending to chart.</p>;
+  if (data.length === 0) return <p className="border-t border-border pt-6 text-sm text-muted">No spending to chart.</p>;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 border-t border-border pt-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h4 className="text-sm font-semibold">
+        <h4 className="section-title">
           {active === "value" ? "Rewards value by category" : "Points by category"}
         </h4>
         {hasValue && showPoints && (
-          <div role="radiogroup" aria-label="Show" className="flex rounded-md border border-border text-xs">
+          <div role="radiogroup" aria-label="Show" className="flex gap-0.5 rounded-lg border border-border bg-surface-2 p-0.5 text-xs font-medium">
             {(["value", "points"] as const).map((m) => (
               <button
                 key={m}
                 type="button"
                 role="radio"
                 aria-checked={active === m}
-                className={`px-3 py-1 ${active === m ? "bg-foreground text-background" : "text-muted"}`}
+                className={`rounded-md px-3 py-1 ${active === m ? "bg-surface text-foreground shadow-sm ring-1 ring-border" : "text-muted hover:text-foreground"}`}
                 onClick={() => setMode(m)}
               >
                 {m === "value" ? "Dollars" : "Points"}
@@ -104,29 +104,31 @@ export function CategoryChart({ rows, hasValue, color, showPoints = true }: Prop
         </ResponsiveContainer>
       </div>
       <details className="text-sm">
-        <summary className="cursor-pointer text-muted">Show as table</summary>
-        <table className="mt-2 w-full text-left text-sm">
-          <thead className="text-xs text-muted">
-            <tr>
-              <th className="py-1 font-medium">Category</th>
-              <th className="py-1 text-right font-medium">Net spend</th>
-              <th className="py-1 text-right font-medium">Points</th>
-              <th className="py-1 text-right font-medium">Value</th>
-              <th className="py-1 text-right font-medium">Not verified</th>
+        <summary className="w-fit cursor-pointer rounded-md text-muted hover:text-foreground">Show as table</summary>
+        <div className="mt-3 overflow-x-auto rounded-lg border border-border">
+        <table className="w-full min-w-[480px] text-left text-sm">
+          <thead className="bg-surface-2">
+            <tr className="eyebrow">
+              <th className="px-3 py-2 font-semibold">Category</th>
+              <th className="px-3 py-2 text-right font-semibold">Net spend</th>
+              <th className="px-3 py-2 text-right font-semibold">Points</th>
+              <th className="px-3 py-2 text-right font-semibold">Value</th>
+              <th className="px-3 py-2 text-right font-semibold">Not verified</th>
             </tr>
           </thead>
           <tbody className="tabular-nums">
             {rows.map((r) => (
               <tr key={r.category} className="border-t border-border">
-                <td className="py-1">{CATEGORY_LABELS[r.category]}</td>
-                <td className="py-1 text-right">{formatCad(r.net_spend)}</td>
-                <td className="py-1 text-right">{formatPoints(r.points)}</td>
-                <td className="py-1 text-right">{r.value === null ? "Not yet verified" : formatCad(r.value)}</td>
-                <td className="py-1 text-right">{r.unverified_count ? `${r.unverified_count} (${formatCad(r.unverified_amount)})` : "—"}</td>
+                <td className="px-3 py-2">{CATEGORY_LABELS[r.category]}</td>
+                <td className="px-3 py-2 text-right">{formatCad(r.net_spend)}</td>
+                <td className="px-3 py-2 text-right">{formatPoints(r.points)}</td>
+                <td className="px-3 py-2 text-right">{r.value === null ? "Not yet verified" : formatCad(r.value)}</td>
+                <td className="px-3 py-2 text-right">{r.unverified_count ? `${r.unverified_count} (${formatCad(r.unverified_amount)})` : "—"}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
       </details>
     </div>
   );

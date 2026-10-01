@@ -39,43 +39,66 @@ function Source({ url }: { url: string }) {
   );
 }
 
+const NUDGE_LABELS: Record<Nudge["kind"], string> = {
+  protection: "Purchase reminder",
+  travel_charge: "Travel reminder",
+  enrollment: "Enrollment",
+  credit: "Unused credit",
+};
+
+/** A reminder card: neutral and informational, never styled as a warning. */
+function NudgeCard({ kind, children }: { kind: Nudge["kind"]; children: React.ReactNode }) {
+  return (
+    <li className="flex gap-3 rounded-lg border border-border bg-background px-4 py-3.5">
+      <svg aria-hidden viewBox="0 0 20 20" className="mt-0.5 h-5 w-5 shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <circle cx="10" cy="10" r="7.25" />
+        <path d="M10 9.25v4.25M10 6.5v.01" strokeLinecap="round" />
+      </svg>
+      <div className="flex min-w-0 flex-col gap-1">
+        <span className="eyebrow">{NUDGE_LABELS[kind]}</span>
+        <p className="leading-relaxed">{children}</p>
+      </div>
+    </li>
+  );
+}
+
 function NudgeItem({ n }: { n: Nudge }) {
   const list = (p: { date: string; description: string; amount: number }[]) =>
     p.slice(0, 3).map((x) => `${x.description} (${formatCad(x.amount)}, ${x.date})`).join("; ") + (p.length > 3 ? `; and ${p.length - 3} more` : "");
   switch (n.kind) {
     case "protection":
       return (
-        <li>
+        <NudgeCard kind={n.kind}>
           You bought at {list(n.purchases)}. This card lists <strong>{PERK_LABELS[n.perk.type].toLowerCase()}</strong>:{" "}
           <Quote text={n.perk.summary} />
           {stop(n.perk.summary)} Conditions: <Quote text={n.perk.conditions} />
           {stop(n.perk.conditions)} Keep your receipt and check the{" "}
           <Source url={n.perk.source_url} /> before relying on it.
-        </li>
+        </NudgeCard>
       );
     case "travel_charge":
       return (
-        <li>
+        <NudgeCard kind={n.kind}>
           Coverage applies only if the trip is charged to this card ({PERK_LABELS[n.perk.type].toLowerCase()}). Travel on
           these statements: {list(n.purchases)}. Conditions: <Quote text={n.perk.conditions} />
           {stop(n.perk.conditions)} See the <Source url={n.perk.source_url} />.
-        </li>
+        </NudgeCard>
       );
     case "enrollment":
       return (
-        <li>
+        <NudgeCard kind={n.kind}>
           <strong>{PERK_LABELS[n.perk.type]}</strong> requires enrollment: <Quote text={n.perk.summary} />
           {stop(n.perk.summary)} See the{" "}
           <Source url={n.perk.source_url} /> for how to enrol.
-        </li>
+        </NudgeCard>
       );
     case "credit":
       return (
-        <li>
+        <NudgeCard kind={n.kind}>
           <strong>{formatCad(n.remaining)}</strong> of <Quote text={n.description} /> ({formatCad(n.limit)}) looks unused
           until {n.period_end} ({n.days_left} day{n.days_left === 1 ? "" : "s"} left), based on the statements uploaded here.
           It applies at {n.merchant_keywords.map((k) => k.toUpperCase()).join(" or ")}.
-        </li>
+        </NudgeCard>
       );
   }
 }
@@ -94,16 +117,21 @@ export function PerksPanel({ card, items, report }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+        <p className="eyebrow">Reminders</p>
         <h3 className="text-base font-semibold">Benefits you may not be using</h3>
-        <p className="text-xs text-muted">
+        <p className="max-w-2xl text-xs leading-relaxed text-muted">
           For information only, not advice. The card&apos;s own terms decide what&apos;s covered; CardOpt only repeats what
           they say.
         </p>
+        </div>
         {nudges.length === 0 ? (
-          <p className="text-sm text-muted">Nothing on these statements to flag.</p>
+          <p className="rounded-lg border border-dashed border-border-strong px-4 py-5 text-center text-sm text-muted">
+            Nothing on these statements to flag.
+          </p>
         ) : (
-          <ul className="flex list-disc flex-col gap-2 pl-5 text-sm">
+          <ul className="flex flex-col gap-3 text-sm">
             {nudges.map((n, i) => (
               <NudgeItem key={i} n={n} />
             ))}
@@ -111,38 +139,40 @@ export function PerksPanel({ card, items, report }: Props) {
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <h3 className="text-base font-semibold">All listed benefits</h3>
+      <div className="flex flex-col gap-3 border-t border-border pt-6">
+        <h3 className="section-title">All listed benefits</h3>
         {listing.status === "unverified" ? (
-          <p className="text-sm text-muted">This card&apos;s benefits are not yet verified.</p>
+          <p className="rounded-lg border border-border bg-background px-4 py-3 text-sm text-muted">
+            This card&apos;s benefits are not yet verified.
+          </p>
         ) : listing.perks.length === 0 ? (
-          <p className="text-sm text-muted">This card lists no benefits.</p>
+          <p className="rounded-lg border border-border bg-background px-4 py-3 text-sm text-muted">This card lists no benefits.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[560px] text-left text-sm">
-              <thead className="text-xs text-muted">
-                <tr>
-                  <th className="py-1 font-medium">Benefit</th>
-                  <th className="py-1 font-medium">What the terms say</th>
-                  <th className="py-1 font-medium">Conditions</th>
-                  <th className="py-1 font-medium">Enrollment</th>
-                  <th className="py-1 font-medium">Must be charged to this card</th>
-                  <th className="py-1 font-medium">Source</th>
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="bg-surface-2">
+                <tr className="eyebrow">
+                  <th className="px-3 py-2 font-semibold">Benefit</th>
+                  <th className="px-3 py-2 font-semibold">What the terms say</th>
+                  <th className="px-3 py-2 font-semibold">Conditions</th>
+                  <th className="px-3 py-2 font-semibold">Enrollment</th>
+                  <th className="px-3 py-2 font-semibold">Must be charged to this card</th>
+                  <th className="px-3 py-2 font-semibold">Source</th>
                 </tr>
               </thead>
               <tbody>
                 {listing.perks.map(({ perk }, i) => (
                   <tr key={i} className="border-t border-border align-top">
-                    <td className="py-1 pr-3">{PERK_LABELS[perk.type]}</td>
-                    <td className="py-1 pr-3">{perk.summary}</td>
-                    <td className="py-1 pr-3">{perk.conditions ?? <span className="text-muted">Details not verified</span>}</td>
-                    <td className="py-1 pr-3">
+                    <td className="px-3 py-2.5 font-medium">{PERK_LABELS[perk.type]}</td>
+                    <td className="px-3 py-2.5">{perk.summary}</td>
+                    <td className="px-3 py-2.5">{perk.conditions ?? <span className="text-muted">Details not verified</span>}</td>
+                    <td className="px-3 py-2.5">
                       {perk.requires_enrollment === null ? <span className="text-muted">Not verified</span> : perk.requires_enrollment ? "Required" : "Not required"}
                     </td>
-                    <td className="py-1 pr-3">
+                    <td className="px-3 py-2.5">
                       {perk.requires_charge_to_card === null ? <span className="text-muted">Details not verified</span> : perk.requires_charge_to_card ? "Yes" : "No"}
                     </td>
-                    <td className="py-1">
+                    <td className="px-3 py-2.5">
                       <Source url={perk.source_url} />
                     </td>
                   </tr>

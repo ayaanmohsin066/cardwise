@@ -19,6 +19,7 @@ import { CardPicker, MAX_CARDS } from "./CardPicker";
 import { CardStatement } from "./CardStatement";
 import { CombinedSummary } from "./CombinedSummary";
 import { EarnMore } from "./EarnMore";
+import { SectionNav, type SectionLink } from "./SectionNav";
 
 /** Per-card state. Held only in memory; overrides are also saved to localStorage. */
 interface CardState {
@@ -107,44 +108,67 @@ export function Importer({ catalog }: { catalog: Catalog }) {
   }, [cards, cardsById, catalog.programs]);
 
   const combined = order.filter((id) => reports[id]).map((id) => reports[id]);
+  const showEarnMore = catalog.empty || combined.length > 0;
+  const sections: SectionLink[] = [
+    { id: "cards", label: "Cards", status: `${order.length} of ${MAX_CARDS}`, available: true },
+    {
+      id: "statements",
+      label: "Statements",
+      status: order.length > 0 ? `${combined.length} imported` : undefined,
+      available: order.length > 0,
+    },
+    { id: "combined", label: "All cards", available: combined.length > 1 },
+    { id: "earn-more", label: "Earn more", available: showEarnMore },
+  ];
 
   return (
     <div className="flex flex-col gap-8">
+      <SectionNav links={sections} />
       <CardPicker catalog={catalog} selected={order} onAdd={addCard} onRemove={removeCard} />
-      {order.map((id) => {
-        const option = cardsById.get(id);
-        const st = cards[id];
-        if (!option || !st) return null;
-        const r = reports[id];
-        return (
-          <div key={id} className="flex flex-col gap-4">
-            <CardStatement
-              card={option}
-              issuerName={issuerName(option.issuer)}
-              hasTransactions={st.transactions !== null}
-              onTransactions={(t) => update(id, { transactions: t })}
-              categorized={r?.items ?? []}
-              overrides={st.overrides}
-              onOverrides={(o) => setOverrides(id, o)}
-              saveFailed={st.saveFailed}
-              refundMatches={r?.refundMatches}
-            />
-            {r && (
-              <BenefitsPanel
-                data={r}
-                program={programFor(option)}
-                settings={st.settings}
-                onSettings={(settings) => update(id, { settings })}
+      <div id="statements" className="flex scroll-mt-32 flex-col gap-8 empty:hidden">
+        {order.map((id) => {
+          const option = cardsById.get(id);
+          const st = cards[id];
+          if (!option || !st) return null;
+          const r = reports[id];
+          return (
+            <div key={id} className="flex flex-col gap-4">
+              <CardStatement
+                card={option}
+                issuerName={issuerName(option.issuer)}
+                hasTransactions={st.transactions !== null}
+                onTransactions={(t) => update(id, { transactions: t })}
+                categorized={r?.items ?? []}
                 overrides={st.overrides}
                 onOverrides={(o) => setOverrides(id, o)}
+                saveFailed={st.saveFailed}
+                refundMatches={r?.refundMatches}
               />
-            )}
-          </div>
-        );
-      })}
-      {combined.length > 1 && <CombinedSummary reports={combined} />}
-      {(catalog.empty || combined.length > 0) && <EarnMore catalog={catalog} reports={combined} version={reports} />}
-      <p className="text-xs text-muted">
+              {r && (
+                <BenefitsPanel
+                  data={r}
+                  program={programFor(option)}
+                  settings={st.settings}
+                  onSettings={(settings) => update(id, { settings })}
+                  overrides={st.overrides}
+                  onOverrides={(o) => setOverrides(id, o)}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {combined.length > 1 && (
+        <div id="combined" className="scroll-mt-32">
+          <CombinedSummary reports={combined} />
+        </div>
+      )}
+      {showEarnMore && (
+        <div id="earn-more" className="scroll-mt-32">
+          <EarnMore catalog={catalog} reports={combined} version={reports} />
+        </div>
+      )}
+      <p className="border-t border-border pt-4 text-xs leading-relaxed text-muted">
         Privacy: statements are processed only in this browser. Category corrections you make are
         saved in this browser&apos;s local storage (merchant name and category only) and are never
         sent anywhere.

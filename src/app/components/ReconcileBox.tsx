@@ -77,25 +77,28 @@ export function ReconcileBox({ card, program, redemptionMethod, isCash, items, o
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-border p-4">
-      <h4 className="text-sm font-semibold">Check against your statement</h4>
-      <p className="text-xs text-muted">
+    <div className="flex flex-col gap-4 rounded-lg border border-border bg-background p-5">
+      <div className="flex flex-col gap-1">
+      <p className="eyebrow">Statement check</p>
+      <h4 className="section-title">Check against your statement</h4>
+      <p className="max-w-2xl text-xs leading-relaxed text-muted">
         Type the {isCash ? "cash back" : "points"} your statement says you earned for this period. If it
         doesn&apos;t match, CardOpt looks for unsure categories that would explain the difference.
       </p>
+      </div>
       <div className="flex flex-wrap items-end gap-2">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1.5 text-sm font-medium">
           {isCash ? "Cash back on statement ($)" : "Points on statement"}
           <input
             inputMode="decimal"
-            className="w-40 rounded-md border border-border bg-surface px-2 py-1.5 text-sm text-foreground"
+            className="field w-44 font-normal tabular-nums"
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
         </label>
         <button
           type="button"
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground"
+          className="btn btn-primary"
           onClick={check}
         >
           Check
@@ -104,7 +107,7 @@ export function ReconcileBox({ card, program, redemptionMethod, isCash, items, o
       {error && <p className="text-sm text-danger">{error}</p>}
 
       {result && result.difference !== null && (
-        <div className="flex flex-col gap-2 text-sm" role="status">
+        <div className="flex flex-col gap-3 border-t border-border pt-4 text-sm" role="status">
           {result.status === "matched" ? (
             <p>
               {result.rounding_mode
@@ -122,13 +125,15 @@ export function ReconcileBox({ card, program, redemptionMethod, isCash, items, o
                   <p className="text-muted">These category changes would explain {result.status === "explained" ? "it" : "part of it"}:</p>
                   <ul className="flex flex-col gap-2">
                     {result.suggestions.map((s) => (
-                      <li key={s.transaction_id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
+                      <li key={s.transaction_id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-surface px-3 py-2">
                         <span>
                           Line {s.statement_line}, {s.date}: {s.description} ({formatCad(s.amount_cad)}):{" "}
                           {CATEGORY_LABELS[s.from]} → <strong>{CATEGORY_LABELS[s.to]}</strong>{" "}
-                          <span className="text-muted">({s.points_change >= 0 ? "+" : ""}{fmt(s.points_change)})</span>
+                          <span className={`tabular-nums ${s.points_change > 0 ? "text-gain" : s.points_change < 0 ? "text-loss" : "text-muted"}`}>
+                            ({s.points_change >= 0 ? "+" : ""}{fmt(s.points_change)})
+                          </span>
                         </span>
-                        <button type="button" className="text-sm underline" onClick={() => accept(s.description, s.to)}>
+                        <button type="button" className="btn btn-sm" onClick={() => accept(s.description, s.to)}>
                           Accept
                         </button>
                       </li>

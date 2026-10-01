@@ -22,32 +22,45 @@ export function CombinedSummary({ reports }: { reports: CardReport[] }) {
     (c): Record<string, number | string> => ({ ...c.by_card, name: CATEGORY_LABELS[c.category], total: c.total }),
   );
   const height = Math.max(120, rows.length * 36 + 40);
+  // Green and red are used only for money gained or lost.
+  const netTone = net > 0 ? "text-gain" : net < 0 ? "text-loss" : "";
 
   return (
-    <section className="flex flex-col gap-6 rounded-lg border border-border bg-surface p-5" aria-label="All selected cards">
-      <header>
-        <h2 className="text-lg font-semibold">All selected cards</h2>
+    <section className="panel" aria-label="All selected cards">
+      <header className="flex flex-col gap-0.5 border-b border-border px-5 py-4">
+        <p className="eyebrow">Combined</p>
+        <h2 className="text-base font-semibold">All selected cards</h2>
         <p className="text-sm text-muted">Combined for the periods each card&apos;s statements cover.</p>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile hero label="Combined net value" value={formatCad(net)} sub={anyExcluded ? "Leaves out unverified parts; see each card" : undefined} />
+      <div className="flex flex-col gap-6 p-5">
+      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5 rounded-lg border border-border bg-background px-5 py-5">
+        <span className="eyebrow">Combined net value</span>
+        <span className={`text-4xl font-semibold tabular-nums tracking-tight sm:text-5xl ${netTone}`}>{formatCad(net)}</span>
+        {anyExcluded && <span className="text-xs leading-relaxed text-muted">Leaves out unverified parts; see each card</span>}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
         <StatTile label="Rewards value" value={formatCad(rewards)} sub={notValued.length ? `${notValued.length} card${notValued.length === 1 ? "" : "s"} not valued (unverified)` : undefined} />
         <StatTile label="Credits used" value={formatCad(credits)} />
         <StatTile label="Annual fee share + FX fees" value={formatCad(fees)} />
       </div>
+      </div>
       {unverified > 0 && (
-        <p className="text-sm text-muted">
-          {unverified} item{unverified === 1 ? " is" : "s are"} not yet verified across these cards and left out of the totals.
-        </p>
+        <div className="flex flex-col gap-1 rounded-lg border border-border-strong border-l-4 border-l-foreground bg-surface-2 px-4 py-3.5 text-sm" role="status">
+          <p className="eyebrow text-foreground">Not yet verified</p>
+          <p className="font-semibold">
+            {unverified} item{unverified === 1 ? " is" : "s are"} not yet verified across these cards and left out of the totals.
+          </p>
+        </div>
       )}
 
-      <ul className="flex flex-col gap-1 text-sm">
+      <ul className="flex flex-col divide-y divide-border rounded-lg border border-border bg-background text-sm">
         {reports.map((r) => (
-          <li key={r.option.id} className="flex flex-wrap items-center gap-2">
+          <li key={r.option.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5">
             <span aria-hidden className="inline-block h-3 w-3 rounded-sm" style={{ background: seriesColor(r.slot) }} />
-            <span>{r.option.name}</span>
-            <span className="text-muted">
+            <span className="font-medium">{r.option.name}</span>
+            <span className="ml-auto tabular-nums text-muted">
               {r.option.card.program_id === CASH_PROGRAM_ID ? "" : `${formatPoints(r.report.points_total)} ${r.program?.name ?? "points"} · `}
               {r.report.rewards_value === null ? "value not yet verified" : formatCad(r.report.rewards_value)}
             </span>
@@ -56,8 +69,8 @@ export function CombinedSummary({ reports }: { reports: CardReport[] }) {
       </ul>
 
       {valued.length > 0 && rows.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <h4 className="text-sm font-semibold">Rewards value by category and card</h4>
+        <div className="flex flex-col gap-3 border-t border-border pt-6">
+          <h4 className="section-title">Rewards value by category and card</h4>
           <div style={{ height }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 24, bottom: 4, left: 8 }} barCategoryGap={8}>
@@ -109,32 +122,35 @@ export function CombinedSummary({ reports }: { reports: CardReport[] }) {
             </ResponsiveContainer>
           </div>
           <details className="text-sm">
-            <summary className="cursor-pointer text-muted">Show as table</summary>
-            <table className="mt-2 w-full text-left text-sm">
-              <thead className="text-xs text-muted">
-                <tr>
-                  <th className="py-1 font-medium">Category</th>
+            <summary className="w-fit cursor-pointer rounded-md text-muted hover:text-foreground">Show as table</summary>
+            <div className="mt-3 overflow-x-auto rounded-lg border border-border">
+            <table className="w-full min-w-[480px] text-left text-sm">
+              <thead className="bg-surface-2">
+                <tr className="eyebrow">
+                  <th className="px-3 py-2 font-semibold">Category</th>
                   {valued.map((r) => (
-                    <th key={r.option.id} className="py-1 text-right font-medium">{r.option.name}</th>
+                    <th key={r.option.id} className="px-3 py-2 text-right font-semibold">{r.option.name}</th>
                   ))}
-                  <th className="py-1 text-right font-medium">Total</th>
+                  <th className="px-3 py-2 text-right font-semibold">Total</th>
                 </tr>
               </thead>
               <tbody className="tabular-nums">
                 {rows.map((row) => (
                   <tr key={String(row.name)} className="border-t border-border">
-                    <td className="py-1">{String(row.name)}</td>
+                    <td className="px-3 py-2">{String(row.name)}</td>
                     {valued.map((r) => (
-                      <td key={r.option.id} className="py-1 text-right">{formatCad(row[r.option.id] as number)}</td>
+                      <td key={r.option.id} className="px-3 py-2 text-right">{formatCad(row[r.option.id] as number)}</td>
                     ))}
-                    <td className="py-1 text-right">{formatCad(row.total as number)}</td>
+                    <td className="px-3 py-2 text-right font-semibold">{formatCad(row.total as number)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
           </details>
         </div>
       )}
+      </div>
     </section>
   );
 }

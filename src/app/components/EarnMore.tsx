@@ -25,6 +25,20 @@ const STAGE_LABELS: Record<Stage, string> = {
 
 const signed = (x: number) => `${x >= 0 ? "+" : "−"}${formatCad(Math.abs(x))}`;
 
+/** A signed dollar figure: green for a gain, red for a loss, plain when it rounds to $0.00. */
+function Signed({ value, suffix = "" }: { value: number; suffix?: string }) {
+  const tone = value > 0.005 ? "text-gain" : value < -0.005 ? "text-loss" : "";
+  return (
+    <span className={`tabular-nums ${tone}`}>
+      {signed(value)}
+      {suffix}
+    </span>
+  );
+}
+
+const TH = "px-3 py-2 font-semibold";
+const TD = "px-3 py-2.5";
+
 export function EarnMore({ catalog, reports, version }: Props) {
   const [running, setRunning] = useState<{ stage: Stage; done: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,9 +53,9 @@ export function EarnMore({ catalog, reports, version }: Props) {
 
   if (catalog.empty) {
     return (
-      <section className="rounded-lg border border-border bg-surface p-5">
-        <h2 className="text-lg font-semibold">Earn more</h2>
-        <p className="mt-2 text-sm text-muted">Recommendations need verified cards.</p>
+      <section className="panel px-5 py-4">
+        <h2 className="text-base font-semibold">Earn more</h2>
+        <p className="mt-1 text-sm text-muted">Recommendations need verified cards.</p>
       </section>
     );
   }
@@ -103,23 +117,24 @@ export function EarnMore({ catalog, reports, version }: Props) {
   const pct = running && running.total > 0 ? Math.round((running.done / running.total) * 100) : 0;
 
   return (
-    <section className="flex flex-col gap-6 rounded-lg border border-border bg-surface p-5" aria-label="Earn more">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold">Earn more</h2>
+    <section className="panel" aria-label="Earn more">
+      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
+        <div className="flex flex-col gap-0.5">
+          <p className="eyebrow">Recommendations</p>
+          <h2 className="text-base font-semibold">Earn more</h2>
           <p className="text-sm text-muted">
             Which card to use for what, and whether a different card would pay off, based on your own spending.
           </p>
         </div>
         <div className="flex gap-2">
           {running && (
-            <button type="button" className="rounded-md border border-border px-4 py-2 text-sm" onClick={cancel}>
+            <button type="button" className="btn" onClick={cancel}>
               Cancel
             </button>
           )}
           <button
             type="button"
-            className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground"
+            className="btn btn-primary"
             onClick={run}
           >
             {running ? "Start over" : results ? "Run again" : "Find ways to earn more"}
@@ -127,6 +142,7 @@ export function EarnMore({ catalog, reports, version }: Props) {
         </div>
       </header>
 
+      <div className="flex flex-col gap-6 p-5 empty:hidden">
       {running && (
         <div className="flex flex-col gap-1" role="status" aria-live="polite">
           <div className="flex justify-between text-xs text-muted">
@@ -150,67 +166,98 @@ export function EarnMore({ catalog, reports, version }: Props) {
 
       {results && proj && (
         <div className={`flex flex-col gap-6 ${running ? "opacity-60" : ""}`}>
-          <p className="rounded-md border border-border bg-background px-3 py-2 text-xs text-muted">
+          <p className="rounded-lg border border-border bg-background px-4 py-3 text-xs leading-relaxed text-muted">
+            <span className="tag mr-2">Projection</span>
             All yearly figures are a projection: your {proj.months} month{proj.months === 1 ? "" : "s"} of statements × 12/
             {proj.months}. Welcome bonuses are counted once, not multiplied.
             {proj.short_data && " With fewer than 3 months, seasonal spending may skew this."}
           </p>
 
           {best && best.ongoing.total_gain_annual > 0.005 && (
-            <div className="rounded-md border border-border p-4 text-sm">
-              <p className="font-medium">Compared with how you used your cards on these statements</p>
-              <dl className="mt-2 grid grid-cols-[1fr_auto] gap-x-6 gap-y-1">
-                <dt>Using your current cards as suggested</dt>
-                <dd className="text-right tabular-nums">{signed(results.change.routing_gain_annual)}/year</dd>
-                <dt>{changeLabel(best)} (ongoing)</dt>
-                <dd className="text-right tabular-nums">{signed(best.ongoing.gain_annual)}/year</dd>
-                <dt className="font-medium">Total</dt>
-                <dd className="text-right font-medium tabular-nums">{signed(best.ongoing.total_gain_annual)}/year</dd>
+            <div className="rounded-lg border border-border bg-background text-sm">
+              <div className="flex flex-col gap-1.5 px-5 py-5">
+                <span className="eyebrow">Compared with how you used your cards on these statements</span>
+                <span className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                  <Signed value={best.ongoing.total_gain_annual} />
+                  <span className="text-base font-medium text-muted"> /year</span>
+                </span>
+              </div>
+              {/* The two parts and their total, as a sum: the last row repeats the headline. */}
+              <dl className="grid grid-cols-[1fr_auto] items-baseline border-t border-border px-5 py-3">
+                <dt className="py-1.5">
+                  <span aria-hidden className="inline-block w-5 text-muted" />
+                  Using your current cards as suggested
+                </dt>
+                <dd className="py-1.5 pl-6 text-right">
+                  <Signed value={results.change.routing_gain_annual} suffix="/year" />
+                </dd>
+                <dt className="py-1.5">
+                  <span aria-hidden className="inline-block w-5 text-muted">+</span>
+                  {changeLabel(best)} (ongoing)
+                </dt>
+                <dd className="py-1.5 pl-6 text-right">
+                  <Signed value={best.ongoing.gain_annual} suffix="/year" />
+                </dd>
+                <dt className="mt-1.5 border-t-2 border-border-strong py-2 font-semibold">
+                  <span aria-hidden className="inline-block w-5">=</span>
+                  Total
+                </dt>
+                <dd className="mt-1.5 border-t-2 border-border-strong py-2 pl-6 text-right font-semibold">
+                  <Signed value={best.ongoing.total_gain_annual} suffix="/year" />
+                </dd>
               </dl>
             </div>
           )}
 
           {excluded.length > 0 && (
-            <div className="text-sm">
-              <p className="font-medium">Left out because their terms aren&apos;t verified yet:</p>
-              <ul className="list-disc pl-5 text-muted">
+            <div className="flex flex-col gap-1.5 rounded-lg border border-border-strong border-l-4 border-l-foreground bg-surface-2 px-4 py-3.5 text-sm">
+              <p className="eyebrow text-foreground">Not yet verified</p>
+              <p className="font-semibold">Left out because their terms aren&apos;t verified yet:</p>
+              <ul className="flex flex-col gap-1">
                 {excluded.map((x) => (
-                  <li key={x.card_id}>
-                    {x.name}: {x.reasons.join("; ")}.
+                  <li key={x.card_id} className="border-t border-border pt-1">
+                    <span className="font-medium">{x.name}</span>: {x.reasons.join("; ")}.
                   </li>
                 ))}
               </ul>
             </div>
           )}
 
-          <div className="flex flex-col gap-3">
-            <h3 className="text-base font-semibold">Use your cards better</h3>
+          <div className="flex flex-col gap-3 border-t border-border pt-6">
+            <div className="flex flex-col gap-0.5">
+              <p className="eyebrow">Routing</p>
+              <h3 className="text-base font-semibold">Use your cards better</h3>
+            </div>
             {results.better.status === "ok" && results.better.current && results.better.suggested ? (
               <>
                 <p className="text-sm">
                   {results.better.gain_annual > 0.005 ? (
                     <>
-                      Following this could earn about <strong>{signed(results.better.gain_annual)}/year</strong> more than
+                      Following this could earn about{" "}
+                      <strong>
+                        <Signed value={results.better.gain_annual} suffix="/year" />
+                      </strong>{" "}
+                      more than
                       the way you used your cards on these statements.
                     </>
                   ) : (
                     "You're already using your cards about as well as possible for this spending."
                   )}
                 </p>
-                <ul className="flex flex-col gap-1 text-sm">
+                <ul className="flex flex-col divide-y divide-border rounded-lg border border-border bg-background text-sm empty:hidden">
                   {results.better.credit_rules.map((c) => (
-                    <li key={`${c.card_id}-${c.description}`}>{describeCreditRule(c, name)}</li>
+                    <li key={`${c.card_id}-${c.description}`} className="px-4 py-2.5">{describeCreditRule(c, name)}</li>
                   ))}
                   {results.better.policy
                     .filter((p) => p.has_spend)
                     .flatMap((p) => describePolicy(p, name))
                     .map((s) => (
-                      <li key={s}>{s}</li>
+                      <li key={s} className="px-4 py-2.5">{s}</li>
                     ))}
                 </ul>
                 <details className="text-sm">
-                  <summary className="cursor-pointer text-muted">Categories with no spending in these statements</summary>
-                  <ul className="mt-1 flex flex-col gap-1 text-muted">
+                  <summary className="w-fit cursor-pointer rounded-md text-muted hover:text-foreground">Categories with no spending in these statements</summary>
+                  <ul className="mt-2 flex flex-col gap-1.5 text-muted">
                     {results.better.policy
                       .filter((p) => !p.has_spend)
                       .flatMap((p) => describePolicy(p, name))
@@ -220,14 +267,14 @@ export function EarnMore({ catalog, reports, version }: Props) {
                   </ul>
                 </details>
                 {(results.better.moves.some((m) => Math.abs(m.gain_annual) > 0.005) || Math.abs(results.better.credit_gain_annual) > 0.005) && (
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto rounded-lg border border-border">
                     <table className="w-full min-w-[560px] text-left text-sm">
-                      <thead className="text-xs text-muted">
-                        <tr>
-                          <th className="py-1 font-medium">Category</th>
-                          <th className="py-1 font-medium">On these statements</th>
-                          <th className="py-1 font-medium">Suggested</th>
-                          <th className="py-1 text-right font-medium">Per year</th>
+                      <thead className="bg-surface-2">
+                        <tr className="eyebrow">
+                          <th className={TH}>Category</th>
+                          <th className={TH}>On these statements</th>
+                          <th className={TH}>Suggested</th>
+                          <th className={`${TH} text-right`}>Per year</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -235,27 +282,27 @@ export function EarnMore({ catalog, reports, version }: Props) {
                           .filter((m) => Math.abs(m.gain_annual) > 0.005)
                           .map((m) => (
                             <tr key={m.category} className="border-t border-border">
-                              <td className="py-1">{CATEGORY_LABELS[m.category]}</td>
-                              <td className="py-1">{m.current.map((x) => `${name(x.card_id)} ${formatCad(x.spend)}`).join(", ")}</td>
-                              <td className="py-1">{m.suggested.map((x) => `${name(x.card_id)} ${formatCad(x.spend)}`).join(", ")}</td>
-                              <td className="py-1 text-right tabular-nums">{signed(m.gain_annual)}</td>
+                              <td className={`${TD} font-medium`}>{CATEGORY_LABELS[m.category]}</td>
+                              <td className={TD}>{m.current.map((x) => `${name(x.card_id)} ${formatCad(x.spend)}`).join(", ")}</td>
+                              <td className={TD}>{m.suggested.map((x) => `${name(x.card_id)} ${formatCad(x.spend)}`).join(", ")}</td>
+                              <td className={`${TD} text-right`}><Signed value={m.gain_annual} /></td>
                             </tr>
                           ))}
                         {Math.abs(results.better.credit_gain_annual) > 0.005 && (
                           <tr className="border-t border-border">
-                            <td className="py-1" colSpan={3}>Purchase credits captured</td>
-                            <td className="py-1 text-right tabular-nums">{signed(results.better.credit_gain_annual)}</td>
+                            <td className={TD} colSpan={3}>Purchase credits captured</td>
+                            <td className={`${TD} text-right`}><Signed value={results.better.credit_gain_annual} /></td>
                           </tr>
                         )}
                         {Math.abs(results.better.other_gain_annual) > 0.005 && (
                           <tr className="border-t border-border">
-                            <td className="py-1" colSpan={3}>Foreign transaction fees and rounding</td>
-                            <td className="py-1 text-right tabular-nums">{signed(results.better.other_gain_annual)}</td>
+                            <td className={TD} colSpan={3}>Foreign transaction fees and rounding</td>
+                            <td className={`${TD} text-right`}><Signed value={results.better.other_gain_annual} /></td>
                           </tr>
                         )}
-                        <tr className="border-t border-border font-medium">
-                          <td className="py-1" colSpan={3}>Total</td>
-                          <td className="py-1 text-right tabular-nums">{signed(results.better.gain_annual)}</td>
+                        <tr className="border-t-2 border-border-strong bg-surface-2 font-semibold">
+                          <td className={TD} colSpan={3}>= Total</td>
+                          <td className={`${TD} text-right`}><Signed value={results.better.gain_annual} /></td>
                         </tr>
                       </tbody>
                     </table>
@@ -263,7 +310,7 @@ export function EarnMore({ catalog, reports, version }: Props) {
                 )}
               </>
             ) : (
-              <p className="text-sm text-muted">
+              <p className="rounded-lg border border-border bg-background px-4 py-3 text-sm text-muted">
                 {results.better.status === "no_usable_cards"
                   ? "None of your cards has verified terms for this spending yet."
                   : "Not enough data to suggest changes."}
@@ -271,32 +318,36 @@ export function EarnMore({ catalog, reports, version }: Props) {
             )}
           </div>
 
-          <div className="flex flex-col gap-3">
-            <h3 className="text-base font-semibold">Change a card</h3>
-            <p className="text-xs text-muted">
+          <div className="flex flex-col gap-3 border-t border-border pt-6">
+            <div className="flex flex-col gap-0.5">
+              <p className="eyebrow">Card changes</p>
+              <h3 className="text-base font-semibold">Change a card</h3>
+            </div>
+            <p className="max-w-3xl text-xs leading-relaxed text-muted">
               Compared with your current cards used as suggested above ({formatCad(results.change.baseline_annual)}/year),
               after annual fees. First year uses first-year fees and a welcome bonus if hitting it pays off.
             </p>
             {changes.length === 0 ? (
-              <p className="text-sm text-muted">No other verified cards to compare yet.</p>
+              <p className="rounded-lg border border-border bg-background px-4 py-3 text-sm text-muted">No other verified cards to compare yet.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[560px] text-left text-sm">
-                  <thead className="text-xs text-muted">
-                    <tr>
-                      <th className="py-1 font-medium">Change</th>
-                      <th className="py-1 text-right font-medium">First year</th>
-                      <th className="py-1 text-right font-medium">Ongoing, per year</th>
-                      <th className="py-1 pl-4 font-medium">Notes</th>
+              <div className="flex flex-col items-start gap-3">
+                <div className="w-full overflow-x-auto rounded-lg border border-border">
+                <table className="w-full min-w-[640px] text-left text-sm">
+                  <thead className="bg-surface-2">
+                    <tr className="eyebrow">
+                      <th className={TH}>Change</th>
+                      <th className={`${TH} text-right`}>First year</th>
+                      <th className={`${TH} text-right`}>Ongoing, per year</th>
+                      <th className={TH}>Notes</th>
                     </tr>
                   </thead>
                   <tbody>
                     {shown.map((c) => (
                       <tr key={`${c.remove}>${c.add}`} className="border-t border-border">
-                        <td className="py-1">{changeLabel(c)}</td>
-                        <td className="py-1 text-right tabular-nums">{signed(c.first_year.gain_annual)}</td>
-                        <td className="py-1 text-right tabular-nums">{signed(c.ongoing.gain_annual)}</td>
-                        <td className="py-1 pl-4 text-xs text-muted">
+                        <td className={`${TD} font-medium`}>{changeLabel(c)}</td>
+                        <td className={`${TD} text-right`}><Signed value={c.first_year.gain_annual} /></td>
+                        <td className={`${TD} text-right`}><Signed value={c.ongoing.gain_annual} /></td>
+                        <td className={`${TD} text-xs text-muted`}>
                           {c.first_year.bonus_value > 0
                             ? `Includes ${formatCad(c.first_year.bonus_value)} welcome bonus${c.first_year.bonus_projected ? " (spend requirement projected from your pace)" : ""}`
                             : c.first_year.bonus_pursued
@@ -307,15 +358,17 @@ export function EarnMore({ catalog, reports, version }: Props) {
                     ))}
                   </tbody>
                 </table>
+                </div>
                 {changes.length > 5 && (
-                  <button type="button" className="mt-2 text-sm underline" onClick={() => setShowAll((v) => !v)}>
+                  <button type="button" className="btn btn-sm" onClick={() => setShowAll((v) => !v)}>
                     {showAll ? "Show fewer" : `Show all ${changes.length}`}
                   </button>
                 )}
               </div>
             )}
             {results.sens && (
-              <p className="text-xs text-muted">
+              <p className="rounded-lg border border-border bg-background px-4 py-3 text-xs leading-relaxed text-muted">
+                <span className="tag mr-2">Sensitivity</span>
                 {results.sens.scenarios === 0
                   ? "Point values: none of these cards' programs has a range of verified values, so there's nothing to vary."
                   : `Point values: the order of the top ${results.sens.base_ranking.length} held in ${results.sens.held} of ${results.sens.scenarios} scenarios where each points program was valued at its lowest and highest verified value.`}
@@ -324,6 +377,7 @@ export function EarnMore({ catalog, reports, version }: Props) {
           </div>
         </div>
       )}
+      </div>
     </section>
   );
 }
