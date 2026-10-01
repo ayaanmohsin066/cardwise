@@ -1,0 +1,80 @@
+{
+  "id": "td-cash-back-visa-infinite",
+  "issuer": "td",
+  "name": "TD Cash Back Visa Infinite Card",
+  "country": "CA",
+  "currency": "CAD",
+  "network": "visa",
+  "card_type": "cashback",
+  "program_id": "cash-cad",
+  "annual_fee": 139,
+  "first_year_fee": null,
+  "fx_fee_pct": null,
+  "base_rate": 1,
+  "caps": [
+    { "id": "td-cbvi-grocery-annual", "amount": 15000, "period": "year" },
+    { "id": "td-cbvi-gas-annual", "amount": 15000, "period": "year" },
+    { "id": "td-cbvi-transit-annual", "amount": 15000, "period": "year" },
+    { "id": "td-cbvi-streaming-bills-annual", "amount": 15000, "period": "year" }
+  ],
+  "earn_rules": [
+    { "categories": ["groceries"], "rate": 3, "cap_id": "td-cbvi-grocery-annual", "after_cap_rate": 1 },
+    { "categories": ["gas"], "rate": 3, "cap_id": "td-cbvi-gas-annual", "after_cap_rate": 1 },
+    { "categories": ["transit"], "rate": 3, "cap_id": "td-cbvi-transit-annual", "after_cap_rate": 1 },
+    { "categories": ["streaming", "recurring_bills"], "rate": 3, "cap_id": "td-cbvi-streaming-bills-annual", "after_cap_rate": 1 }
+  ],
+  "welcome_bonus": null,
+  "purchase_credits": [],
+  "perks": [
+    {
+      "type": "travel_medical",
+      "summary": "Up to $2 million travel medical coverage for the first 10 days (4 days if cardholder or spouse is 65+)",
+      "conditions": "Underwritten by TD Life Insurance Company. Subject to conditions, limitations and exclusions including a pre-existing condition exclusion.",
+      "requires_enrollment": false,
+      "requires_charge_to_card": null,
+      "source_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card"
+    },
+    {
+      "type": "other",
+      "summary": "Delayed and Lost Baggage Insurance, up to $1,000 per insured person for essentials if baggage is delayed more than 6 hours or lost",
+      "conditions": "your trip must be paid for in full using your TD Credit Card",
+      "requires_enrollment": false,
+      "requires_charge_to_card": true,
+      "source_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card"
+    },
+    {
+      "type": "rental_car",
+      "summary": "Auto Rental Collision/Loss Damage Insurance",
+      "conditions": "Car rentals must be charged in full to the Card, cannot exceed 48 consecutive days, and the rental agency's Collision Damage Waiver coverage must be declined by the Cardholder.",
+      "requires_enrollment": false,
+      "requires_charge_to_card": true,
+      "source_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card"
+    },
+    {
+      "type": "purchase_protection",
+      "summary": "Coverage for most eligible new items if stolen or damaged within 90 days of purchase",
+      "conditions": "the item must be paid for in full using your TD Credit Card",
+      "requires_enrollment": false,
+      "requires_charge_to_card": true,
+      "source_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card"
+    },
+    {
+      "type": "extended_warranty",
+      "summary": "Extends the manufacturer's warranty",
+      "conditions": "the item must be paid for in full using your TD Credit Card",
+      "requires_enrollment": false,
+      "requires_charge_to_card": true,
+      "source_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card"
+    },
+    {
+      "type": "mobile_device",
+      "summary": "Up to $1,000 coverage for loss, theft, accidental damage, or mechanical breakdown of eligible mobile devices",
+      "conditions": "Underwritten by American Bankers Insurance Company of Florida (Assurant). Subject to conditions, limitations and exclusions in the Certificate of Insurance.",
+      "requires_enrollment": false,
+      "requires_charge_to_card": null,
+      "source_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card"
+    }
+  ],
+  "source_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card",
+  "last_verified": "2026-10-01"
+}

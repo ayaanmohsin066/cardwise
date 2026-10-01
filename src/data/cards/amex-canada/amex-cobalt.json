@@ -1,0 +1,66 @@
+{
+  "id": "amex-cobalt",
+  "issuer": "amex-canada",
+  "name": "American Express Cobalt Card",
+  "country": "CA",
+  "currency": "CAD",
+  "network": "amex",
+  "card_type": "points",
+  "program_id": "amex-membership-rewards",
+  "annual_fee": 191.88,
+  "first_year_fee": 191.88,
+  "fx_fee_pct": null,
+  "base_rate": 1,
+  "caps": null,
+  "earn_rules": [
+    { "categories": ["dining", "groceries"], "rate": 5, "cap_id": null, "after_cap_rate": null },
+    { "categories": ["streaming"], "rate": 3, "cap_id": null, "after_cap_rate": null },
+    { "categories": ["gas", "transit"], "rate": 2, "cap_id": null, "after_cap_rate": null }
+  ],
+  "welcome_bonus": null,
+  "purchase_credits": [
+    {
+      "description": "$5 monthly Instacart statement credit (until Dec 31, 2027, registration required)",
+      "merchant_keywords": ["instacart"],
+      "statement_keywords": null,
+      "amount": 5,
+      "period": "month"
+    }
+  ],
+  "perks": [
+    {
+      "type": "other",
+      "summary": "Common carrier accidental death & dismemberment insurance, up to $250,000",
+      "conditions": "when you fully charge your common carrier (plane, train, ship or bus) tickets to your Card",
+      "requires_enrollment": false,
+      "requires_charge_to_card": true,
+      "source_url": "https://americanexpress.com/en-ca/insurance/coverage/cobalt-card"
+    },
+    {
+      "type": "other",
+      "summary": "Up to $500 coverage against loss of most personal items (excluding cash) if your accommodation is burglarized",
+      "conditions": "when you fully charge your accommodations to your Card",
+      "requires_enrollment": false,
+      "requires_charge_to_card": true,
+      "source_url": "https://americanexpress.com/en-ca/insurance/coverage/cobalt-card"
+    },
+    {
+      "type": "rental_car",
+      "summary": "Theft, loss and damage coverage for rental cars with an MSRP up to $85,000, for rentals of 48 days or less",
+      "conditions": "when you fully charge your rental to your Card",
+      "requires_enrollment": false,
+      "requires_charge_to_card": true,
+      "source_url": "https://americanexpress.com/en-ca/insurance/coverage/cobalt-card"
+    },
+    {
+      "type": "extended_warranty",
+      "summary": "Extends the manufacturer's original warranty up to one additional year",
+      "conditions": "when you fully charge eligible items to your Card",
+      "requires_enrollment": false,
+      "requires_charge_to_card": true,
+      "source_url": "https://americanexpress.com/en-ca/insurance/coverage/cobalt-card"
+    }
+  ],
+  "source_url": "https://www.americanexpress.com/en-ca/credit-cards/cobalt-card/",
+  "last_verified": "2026-10-01"
+}
