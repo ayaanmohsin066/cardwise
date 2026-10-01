@@ -1,7 +1,7 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { CASH_PROGRAM_ID, CATEGORIES } from "@/engine";
+import { CASH_PROGRAM_ID, combineCardSummaries } from "@/engine";
 import { CATEGORY_LABELS, formatCad, formatPoints, seriesColor } from "../lib/format";
 import type { CardReport } from "./Importer";
 import { StatTile } from "./StatTile";
@@ -11,28 +11,16 @@ import { StatTile } from "./StatTile";
  * different programs don't, so points are listed per card, never summed.
  */
 export function CombinedSummary({ reports }: { reports: CardReport[] }) {
-  const valued = reports.filter((r) => r.report.rewards_value !== null);
-  const notValued = reports.filter((r) => r.report.rewards_value === null);
-  const net = reports.reduce((s, r) => s + r.report.net_value, 0);
-  const rewards = valued.reduce((s, r) => s + (r.report.rewards_value ?? 0), 0);
-  const credits = reports.reduce((s, r) => s + r.report.credits_total, 0);
-  const fees = reports.reduce((s, r) => s + (r.report.fees.annual_fee_prorated ?? 0) + (r.report.fx.amount ?? 0), 0);
-  const unverified = reports.reduce((s, r) => s + r.report.unverified.reduce((a, u) => a + u.count, 0), 0);
-  const anyExcluded = reports.some((r) => r.report.net_value_excludes.length > 0);
+  const summary = combineCardSummaries(reports.map((r) => r.report));
+  const valued = reports.filter((r) => summary.valued_card_ids.includes(r.option.id));
+  const notValued = summary.unvalued_card_ids;
+  const { net_value: net, rewards_value: rewards, credits_total: credits, fees_total: fees } = summary;
+  const { unverified_count: unverified, any_excluded: anyExcluded } = summary;
 
-  const rows = CATEGORIES.map((c) => {
-    const row: Record<string, number | string> = { name: CATEGORY_LABELS[c] };
-    let total = 0;
-    for (const r of valued) {
-      const v = r.report.categories.find((x) => x.category === c)?.value ?? 0;
-      row[r.option.id] = v;
-      total += v;
-    }
-    return { row, total };
-  })
-    .filter((x) => valued.some((r) => (x.row[r.option.id] as number) !== 0))
-    .sort((a, b) => b.total - a.total)
-    .map((x): Record<string, number | string> => ({ ...x.row, total: x.total }));
+  // Chart rows: one key per card id (report.card_id is the card's id), plus the label and total.
+  const rows = summary.categories.map(
+    (c): Record<string, number | string> => ({ ...c.by_card, name: CATEGORY_LABELS[c.category], total: c.total }),
+  );
   const height = Math.max(120, rows.length * 36 + 40);
 
   return (

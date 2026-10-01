@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { redemptionValues, type Program } from "@/engine";
 import { formatCad, formatPoints } from "../lib/format";
+import { parseTypedAmount } from "../lib/typed-amount";
 
 const methodLabel = (m: string) => m.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 
@@ -16,8 +17,8 @@ interface Props {
 /** "Your points are worth": the user's balance under each redemption method. */
 export function RedeemPanel({ program, isCash, color }: Props) {
   const [input, setInput] = useState("");
-  const balance = Number(input.replace(/[$,\s]/g, ""));
-  const valid = input.trim() !== "" && Number.isFinite(balance) && balance >= 0;
+  const balance = parseTypedAmount(input);
+  const valid = balance !== null && balance >= 0;
   const report = valid ? redemptionValues(program, balance) : null;
 
   const valued = report?.kind === "points" ? report.options.filter((o) => o.value !== null) : [];

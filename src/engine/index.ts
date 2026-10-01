@@ -17,6 +17,7 @@ export { pointsFromDollars, pointsValue, valuePerDollar } from "./value";
 export * from "./dates";
 export * from "./points";
 export * from "./benefits";
+export * from "./combine";
 export * from "./reconcile";
 export * from "./credits";
 export * from "./lp";

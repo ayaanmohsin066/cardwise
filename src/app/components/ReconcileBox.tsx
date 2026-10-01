@@ -16,6 +16,7 @@ import {
 } from "@/engine";
 import { CATEGORY_LABELS, formatCad, formatPoints } from "../lib/format";
 import { loadRounding, saveRounding } from "../lib/rounding-storage";
+import { parseTypedAmount } from "../lib/typed-amount";
 
 interface Props {
   card: Card;
@@ -49,8 +50,8 @@ export function ReconcileBox({ card, program, redemptionMethod, isCash, items, o
 
   function check() {
     setError(null);
-    const n = Number(input.replace(/[$,\s]/g, ""));
-    if (!input.trim() || !Number.isFinite(n)) {
+    const n = parseTypedAmount(input);
+    if (n === null) {
       setError(isCash ? "Enter the cash back shown on your statement." : "Enter the points shown on your statement.");
       return;
     }
